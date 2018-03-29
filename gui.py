@@ -7,6 +7,7 @@ from tkinter import *
 from serial import *
 from tkinter import ttk
 import serial.tools.list_ports
+from tkinter import messagebox
 
 
 class GUI(Frame):
@@ -71,11 +72,15 @@ class GUI(Frame):
         self.selected_port = StringVar()
         self.ports_list = ttk.Combobox(frame, textvariable=self.selected_port, state='readonly')
         self.ports_list['value'] = self.get_available_com_ports()
-        self.ports_list.current(0)
-        self.ports_list.bind('<<ComboboxSelected>>', self.select_port)
-        self.ports_list.grid(row=1, column=0, sticky=W)
+        if (len(self.ports_list['value']) > 0):
+            self.ports_list.current(0)
+            self.ports_list.bind('<<ComboboxSelected>>', self.select_port)
+            self.ports_list.grid(row=1, column=0, sticky=W)
 
-        self.select_port(None)
+            self.select_port(None)
+        else:
+            messagebox.showinfo("程序停止", "没有可用的 COM 端口！")
+            exit(1)
 
     def get_available_com_ports(self):
         ports = []
