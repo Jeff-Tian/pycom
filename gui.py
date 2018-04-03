@@ -1,4 +1,6 @@
 # encoding=utf-8
+import threading
+
 import serial
 
 __author__ = 'freedom'
@@ -71,7 +73,7 @@ class GUI(Frame):
         self.selected_port = StringVar()
         self.ports_list = ttk.Combobox(frame, textvariable=self.selected_port, state='readonly')
         self.ports_list['value'] = self.get_available_com_ports()
-        if (len(self.ports_list['value']) > 0):
+        if len(self.ports_list['value']) > 0:
             self.ports_list.current(0)
             self.ports_list.bind('<<ComboboxSelected>>', self.select_port)
             self.ports_list.grid(row=1, column=0, sticky=W)
@@ -98,12 +100,9 @@ class GUI(Frame):
 
     def submit(self):
         context1 = self.input.get()
-        print('about to write ', context1.encode('latin-1'))
-        n = self.ser.write(context1.encode())
-        output = self.ser.read(n)
-        print(output)
-        self.show.delete(0.0, END)
-        self.show.insert(0.0, output)
+        print('about to write ', context1.encode('utf-8'))
+        # self.show.delete(0.0, END)
+        # self.show.insert(0.0, output)
 
     def open_serial(self):
         print('opening...')
@@ -112,7 +111,8 @@ class GUI(Frame):
         self.ser.open()
         if self.ser.isOpen():
             self.showSerial.delete(0.0, END)
-            self.showSerial.insert(0.0, "Serial has been opend!")
+            self.showSerial.insert(0.0, "Serial has been opened!")
+            self.try_reading()
 
     def close_serial(self):
         self.ser.close()
@@ -120,9 +120,18 @@ class GUI(Frame):
             self.showSerial.delete(0.0, END)
             self.showSerial.insert(0.0, "Serial has been closed!")
 
+    def try_reading(self):
+        thread = threading.Thread(target=read_from_port, args=self.ser)
+        thread.start()
+        print('thread started...')
+
+
+def read_from_port(ser):
+    print('reading...', ser)
+
 
 root = Tk()
-root.title("惊吓设置")
+root.title("惊吓实验")
 # root.geometry("3000x4000")
 app = GUI(root)
 root.mainloop()
