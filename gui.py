@@ -55,6 +55,11 @@ class GUI(Frame):
         self.showSerial.grid(row=12, column=0, sticky=W)
         self.init_serial()
 
+        self.thread = threading.Thread(target=self.read_from_port, args=self.ser)
+        self.thread.daemon = True
+        self.master = master
+        master.protocol('WM_DELETE_WINDOW', self.close_window)
+
     def make_baudrate_list(self, frame):
         # 波特率选择下拉菜单
         self.boxValueBaudrate = IntVar()
@@ -121,17 +126,20 @@ class GUI(Frame):
             self.showSerial.insert(0.0, "Serial has been closed!")
 
     def try_reading(self):
-        thread = threading.Thread(target=read_from_port, args=self.ser)
-        thread.start()
+        self.thread.start()
         print('thread started...')
 
+    def close_window(self):
+        print('closing window')
+        self.master.destroy()
 
-def read_from_port(ser):
-    print('reading...', ser)
+    def read_from_port(ser):
+        print('reading...', ser)
 
 
 root = Tk()
 root.title("惊吓实验")
 # root.geometry("3000x4000")
 app = GUI(root)
+# root.protocol('WM_DELETE_WINDOW', app.close_window)
 root.mainloop()
