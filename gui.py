@@ -26,7 +26,7 @@ class GUI(Frame):
         # 串口号提示
         self.lab1 = Label(frame, text='序列号')
         self.lab1.grid(row=0, column=0, sticky=W)
-
+        self.status_box(frame)
         self.init_serial()
         self.make_com_list(frame)
         # 波特率选择提示
@@ -54,15 +54,17 @@ class GUI(Frame):
         # 串口关闭按钮
         self.button3 = Button(frame, text='关闭串口', command=self.close_serial)
         self.button3.grid(row=10, column=0, sticky=W)
-        # 串口信息提示框
-        self.showSerial = Text(frame, width=20, height=2, wrap=WORD)
-        self.showSerial.grid(row=12, column=0, sticky=W)
-        self.init_serial()
+
         self.master = master
         master.protocol('WM_DELETE_WINDOW', self.close_window)
 
         self.data_button = Button(frame, text='模拟数据', command=self.generate_data)
         self.data_button.grid(row=14, column=1, sticky=W)
+
+    def status_box(self, frame):
+        # 串口信息提示框
+        self.showSerial = Text(frame, width=20, height=2, wrap=WORD)
+        self.showSerial.grid(row=12, column=0, sticky=W)
 
     def generate_data(self):
         thread_data = threading.Thread(target=DataGenerator.randomize, args=[self.ser])
@@ -92,8 +94,10 @@ class GUI(Frame):
             self.ports_list.current(0)
             self.ports_list.bind('<<ComboboxSelected>>', self.select_port)
             self.ports_list.grid(row=1, column=0, sticky=W)
-
             self.select_port(None)
+
+            if len(self.ports_list['value']) == 1:
+                self.open_serial()
         else:
             messagebox.showinfo("程序停止", "没有可用的 COM 端口！")
             exit(1)
@@ -121,46 +125,52 @@ class GUI(Frame):
         # self.show.insert(0.0, output)
 
     def open_serial(self):
-        print('opening...')
-        print('port = ', self.port)
         self.ser.setPort(self.port)
         self.ser.open()
         if self.ser.isOpen():
             self.showSerial.delete(0.0, END)
             self.showSerial.insert(0.0, "Serial has been opened!")
-            root.thread.start()
+
+            thread = threading.Thread(target=self.read_from_port, args=[])
+            thread.daemon = True
+            # _thread.start_new_thread(read_from_port, (app,))
+            root.thread = thread
+            thread.start()
+
+            self.file_name = strftime('%Y-%m-%d %H%M%S.csv', gmtime())
+            self.write_data_to_file()
+
+    def write_data_to_file(self):
+        with open(self.file_name, 'w') as data_file:
+            data_file.writelines(['{}, {}'.format('timestamp', 'data'), '\n'])
+
+    def append_data_to_file(self, data=None):
+        with open(self.file_name, 'a') as data_file:
+            data_file.writelines(['{}, {}'.format(strftime('%Y-%m-%d %H:%M:%S.csv', gmtime()), data), '\n'])
 
     def close_serial(self):
         self.ser.close()
         if not self.ser.isOpen():
             self.showSerial.delete(0.0, END)
             self.showSerial.insert(0.0, "Serial has been closed!")
-            self.closing = False
 
     def close_window(self):
         print('closing window')
-        self.closing = True
+        self.ser.close()
         self.master.destroy()
 
-
-def read_from_port(app):
-    while (not app.closing) and app.ser.isOpen():
-        n = app.ser.inWaiting()
-        if n > 0:
-            response = app.ser.readline()
-            print('response = ', strftime('%Y-%m-%d %H:%M:%S', gmtime()), response)
+    def read_from_port(self):
+        while self.ser.isOpen():
+            n = self.ser.inWaiting()
+            if n > 0:
+                response = self.ser.readline()
+                print('response = ', strftime('%Y-%m-%d %H:%M:%S', gmtime()), response)
+                self.append_data_to_file(response)
 
 
 root = Tk()
 root.title("惊吓实验")
 # root.geometry("3000x4000")
 app = GUI(root)
-
-thread = threading.Thread(target=read_from_port, args=[app])
-thread.daemon = True
-
-# _thread.start_new_thread(read_from_port, (app,))
-
-root.thread = thread
 
 root.mainloop()
