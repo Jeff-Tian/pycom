@@ -1,6 +1,6 @@
 # encoding=utf-8
 import threading
-
+import _thread
 import serial
 
 __author__ = 'freedom'
@@ -54,9 +54,6 @@ class GUI(Frame):
         self.showSerial = Text(frame, width=20, height=2, wrap=WORD)
         self.showSerial.grid(row=12, column=0, sticky=W)
         self.init_serial()
-
-        self.thread = threading.Thread(target=self.read_from_port, args=self.ser)
-        self.thread.daemon = True
         self.master = master
         master.protocol('WM_DELETE_WINDOW', self.close_window)
 
@@ -68,6 +65,7 @@ class GUI(Frame):
         self.BaudrateChoice.current(0)
         self.BaudrateChoice.bind('<<ComboboxSelected>>', self.ChoiceBaudrate)
         self.BaudrateChoice.grid(row=3, column=0, sticky=W)
+        self.closing = False
 
     def init_serial(self):
         # 串口初始化配置
@@ -117,29 +115,39 @@ class GUI(Frame):
         if self.ser.isOpen():
             self.showSerial.delete(0.0, END)
             self.showSerial.insert(0.0, "Serial has been opened!")
-            self.try_reading()
+            root.thread.start()
 
     def close_serial(self):
         self.ser.close()
         if not self.ser.isOpen():
             self.showSerial.delete(0.0, END)
             self.showSerial.insert(0.0, "Serial has been closed!")
-
-    def try_reading(self):
-        self.thread.start()
-        print('thread started...')
+            self.closing = False
 
     def close_window(self):
         print('closing window')
+        self.closing = True
         self.master.destroy()
 
-    def read_from_port(ser):
-        print('reading...', ser)
+
+def read_from_port(root, app):
+    print('reading...', root)
+    while not app.closing and app.ser.isOpen():
+        print('try reading...')
+        response = app.ser.readline()
+        print('response = ', response)
 
 
 root = Tk()
 root.title("惊吓实验")
 # root.geometry("3000x4000")
 app = GUI(root)
-# root.protocol('WM_DELETE_WINDOW', app.close_window)
+
+thread = threading.Thread(target=read_from_port, args=[root, app])
+thread.daemon = True
+
+_thread.start_new_thread(read_from_port, (root, app))
+
+root.thread = thread
+
 root.mainloop()
