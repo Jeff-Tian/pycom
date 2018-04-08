@@ -1,5 +1,8 @@
 # encoding=utf-8
 import threading
+from time import gmtime
+from time import strftime
+
 import serial
 
 from DataGenerator import *
@@ -145,7 +148,7 @@ def read_from_port(app):
         n = app.ser.inWaiting()
         if n > 0:
             response = app.ser.readline()
-            print('response = ', response)
+            print('response = ', strftime('%Y-%m-%d %H:%M:%S', gmtime()), response)
 
 
 root = Tk()
