@@ -1,7 +1,8 @@
 # encoding=utf-8
 import threading
-import _thread
 import serial
+
+from DataGenerator import *
 
 __author__ = 'freedom'
 
@@ -56,6 +57,14 @@ class GUI(Frame):
         self.init_serial()
         self.master = master
         master.protocol('WM_DELETE_WINDOW', self.close_window)
+
+        self.data_button = Button(frame, text='模拟数据', command=self.generate_data)
+        self.data_button.grid(row=14, column=1, sticky=W)
+
+    def generate_data(self):
+        thread_data = threading.Thread(target=DataGenerator.randomize, args=[self.ser])
+        thread_data.daemon = True
+        thread_data.start()
 
     def make_baudrate_list(self, frame):
         # 波特率选择下拉菜单
