@@ -102,8 +102,9 @@ class GUI(Frame):
         print(self.baudrate)
 
     def submit(self):
-        context1 = self.input.get()
+        context1 = self.input.get() + '\n'
         print('about to write ', context1.encode('utf-8'))
+        self.ser.write(context1.encode('utf-8'))
         # self.show.delete(0.0, END)
         # self.show.insert(0.0, output)
 
@@ -130,12 +131,12 @@ class GUI(Frame):
         self.master.destroy()
 
 
-def read_from_port(root, app):
-    print('reading...', root)
-    while not app.closing and app.ser.isOpen():
-        print('try reading...')
-        response = app.ser.readline()
-        print('response = ', response)
+def read_from_port(app):
+    while (not app.closing) and app.ser.isOpen():
+        n = app.ser.inWaiting()
+        if n > 0:
+            response = app.ser.readline()
+            print('response = ', response)
 
 
 root = Tk()
@@ -143,10 +144,10 @@ root.title("惊吓实验")
 # root.geometry("3000x4000")
 app = GUI(root)
 
-thread = threading.Thread(target=read_from_port, args=[root, app])
+thread = threading.Thread(target=read_from_port, args=[app])
 thread.daemon = True
 
-_thread.start_new_thread(read_from_port, (root, app))
+# _thread.start_new_thread(read_from_port, (app,))
 
 root.thread = thread
 
