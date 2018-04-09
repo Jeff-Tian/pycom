@@ -1,3 +1,5 @@
 pyserial
 _tkinter
 easygui
+plotly
+pandas_datareader
