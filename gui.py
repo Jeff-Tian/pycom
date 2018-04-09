@@ -146,7 +146,7 @@ class GUI(Frame):
 
     def append_data_to_file(self, data=None):
         with open(self.file_name, 'a') as data_file:
-            data_file.writelines(['{}, {}'.format(strftime('%Y-%m-%d %H:%M:%S.csv', gmtime()), data), '\n'])
+            data_file.writelines(['{}, {}'.format(strftime('%Y-%m-%d %H:%M:%S', gmtime()), data)])
 
     def close_serial(self):
         self.ser.close()
@@ -163,7 +163,7 @@ class GUI(Frame):
         while self.ser.isOpen():
             n = self.ser.inWaiting()
             if n > 0:
-                response = self.ser.readline()
+                response = self.ser.readline().decode('utf-8')
                 print('response = ', strftime('%Y-%m-%d %H:%M:%S', gmtime()), response)
                 self.append_data_to_file(response)
 
