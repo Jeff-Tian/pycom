@@ -15,6 +15,7 @@ class DataVisualizer:
     def __init__(self, ser):
         self.file_name = strftime('%Y-%m-%d %H%M%S.csv', gmtime())
         self.ser = ser
+        self.index = 0
 
     def start(self):
         thread = threading.Thread(target=self.display_data_from_port, args=[])
@@ -30,8 +31,14 @@ class DataVisualizer:
                 self.append_data_to_file(response)
 
     def append_data_to_file(self, data=None):
+        timestamp = strftime('%Y-%m-%d %H:%M:%S', gmtime())
+        plt.scatter(self.index, data)
+        plt.pause(0.05)
+        plt.show()
+        self.index += 1
+
         with open(self.file_name, 'a') as data_file:
-            data_file.writelines(['{}, {}'.format(strftime('%Y-%m-%d %H:%M:%S', gmtime()), data)])
+            data_file.writelines(['{}, {}'.format(timestamp, data)])
 
     def write_data_to_file(self):
         with open(self.file_name, 'w') as data_file:
