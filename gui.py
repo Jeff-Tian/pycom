@@ -1,5 +1,6 @@
 # encoding=utf-8
 import threading
+import matplotlib.pyplot as plt
 from time import gmtime
 from time import strftime
 
@@ -17,8 +18,22 @@ import serial.tools.list_ports
 from tkinter import messagebox
 
 
+def bind_event_data(widget, sequence, func, add=None):
+    def _substitute(*args):
+        e = lambda: None  # simplest object with __dict__
+        e.data = eval(args[0])
+        e.widget = widget
+        return (e,)
+
+    funcid = widget._register(func, _substitute, needcleanup=1)
+    cmd = '{0}if {{"[{1} %d]" == "break"}} break\n'.format('+' if add else '', funcid)
+    widget.tk.call('bind', widget._w, sequence, cmd)
+
+
 class GUI(Frame):
     def __init__(self, master):
+        self.master = master
+        master.title('动物惊吓实验')
         frame = Frame(master)
         frame.pack()
         # 串口设置相关变量
@@ -56,11 +71,16 @@ class GUI(Frame):
         self.button3 = Button(frame, text='关闭串口', command=self.close_serial)
         self.button3.grid(row=10, column=0, sticky=W)
 
-        self.master = master
         master.protocol('WM_DELETE_WINDOW', self.close_window)
 
         self.data_button = Button(frame, text='模拟数据', command=self.generate_data)
         self.data_button.grid(row=14, column=1, sticky=W)
+
+        # master.bind('<<data_received>>', self.data_received)
+        bind_event_data(master, '<<data_received>>', self.data_received)
+
+    def data_received(self, event):
+        data = event.data
 
     def status_box(self, frame):
         # 串口信息提示框
@@ -129,10 +149,11 @@ class GUI(Frame):
         self.ser.setPort(self.port)
         self.ser.open()
         if self.ser.isOpen():
+            self.index = 0
             self.showSerial.delete(0.0, END)
             self.showSerial.insert(0.0, "Serial has been opened!")
-            data_visualizer = DataVisualizer(self.ser)
-            data_visualizer.start()
+            self.data_visualizer = DataVisualizer(self.master, self.ser)
+            self.data_visualizer.start()
 
     def close_serial(self):
         self.ser.close()
@@ -155,7 +176,6 @@ class GUI(Frame):
 
 
 root = Tk()
-root.title("惊吓实验")
 # root.geometry("3000x4000")
 app = GUI(root)
 
