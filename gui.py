@@ -6,6 +6,7 @@ from time import strftime
 import serial
 
 from DataGenerator import *
+from DataVisualizer import DataVisualizer
 
 __author__ = 'freedom'
 
@@ -130,23 +131,8 @@ class GUI(Frame):
         if self.ser.isOpen():
             self.showSerial.delete(0.0, END)
             self.showSerial.insert(0.0, "Serial has been opened!")
-
-            thread = threading.Thread(target=self.read_from_port, args=[])
-            thread.daemon = True
-            # _thread.start_new_thread(read_from_port, (app,))
-            root.thread = thread
-            thread.start()
-
-            self.file_name = strftime('%Y-%m-%d %H%M%S.csv', gmtime())
-            self.write_data_to_file()
-
-    def write_data_to_file(self):
-        with open(self.file_name, 'w') as data_file:
-            data_file.writelines(['{}, {}'.format('timestamp', 'data'), '\n'])
-
-    def append_data_to_file(self, data=None):
-        with open(self.file_name, 'a') as data_file:
-            data_file.writelines(['{}, {}'.format(strftime('%Y-%m-%d %H:%M:%S', gmtime()), data)])
+            data_visualizer = DataVisualizer(self.ser)
+            data_visualizer.start()
 
     def close_serial(self):
         self.ser.close()

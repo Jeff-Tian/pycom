@@ -3,3 +3,4 @@ _tkinter
 easygui
 plotly
 pandas_datareader
+matplotlib
