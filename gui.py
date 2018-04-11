@@ -1,5 +1,7 @@
 # encoding=utf-8
 import threading
+from tkinter import filedialog
+
 import matplotlib.pyplot as plt
 from time import gmtime
 from time import strftime
@@ -31,10 +33,13 @@ def bind_event_data(widget, sequence, func, add=None):
 
 
 class GUI(Frame):
-    def __init__(self, master):
-        self.master = master
-        master.title('动物惊吓实验')
-        frame = Frame(master)
+    def __init__(self, window):
+        window.title('动物惊吓实验')
+
+        self.make_menu_bar(window)
+
+        self.window = window
+        frame = Frame(window)
         frame.pack()
         # 串口设置相关变量
         self.port = "0"
@@ -71,13 +76,26 @@ class GUI(Frame):
         self.button3 = Button(frame, text='关闭串口', command=self.close_serial)
         self.button3.grid(row=10, column=0, sticky=W)
 
-        master.protocol('WM_DELETE_WINDOW', self.close_window)
+        window.protocol('WM_DELETE_WINDOW', self.close_window)
 
         self.data_button = Button(frame, text='模拟数据', command=self.generate_data)
         self.data_button.grid(row=14, column=1, sticky=W)
 
         # master.bind('<<data_received>>', self.data_received)
-        bind_event_data(master, '<<data_received>>', self.data_received)
+        bind_event_data(window, '<<data_received>>', self.data_received)
+
+    def make_menu_bar(self, window):
+        menu_bar = Menu(window)
+        file_menu = Menu(menu_bar, tearoff=0)
+        file_menu.add_command(label='打开', command=self.open_file)
+        file_menu.add_separator()
+        file_menu.add_command(label='退出', command=self.close_window)
+        menu_bar.add_cascade(label='文件', menu=file_menu)
+        window.config(menu=menu_bar)
+
+    def open_file(self):
+        file_path = filedialog.askopenfilename(initialdir='.', title="选择文件", filetypes=[('逗号分隔文件', '*.*')])
+        self.data_visualizer.plot_csv(file_path)
 
     def data_received(self, event):
         data = event.data
@@ -152,7 +170,7 @@ class GUI(Frame):
             self.index = 0
             self.showSerial.delete(0.0, END)
             self.showSerial.insert(0.0, "Serial has been opened!")
-            self.data_visualizer = DataVisualizer(self.master, self.ser)
+            self.data_visualizer = DataVisualizer(self.window, self.ser)
             self.data_visualizer.start()
 
     def close_serial(self):
@@ -163,8 +181,9 @@ class GUI(Frame):
 
     def close_window(self):
         print('closing window')
-        self.ser.close()
-        self.master.destroy()
+        # self.ser.close()
+        # self.window.destroy()
+        self.window.quit()
 
     def read_from_port(self):
         while self.ser.isOpen():
