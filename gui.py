@@ -23,7 +23,7 @@ from tkinter import messagebox
 def bind_event_data(widget, sequence, func, add=None):
     def _substitute(*args):
         e = lambda: None  # simplest object with __dict__
-        e.data = eval(args[0])
+        e.data = args[0]  # eval(args[0])
         e.widget = widget
         return (e,)
 
@@ -50,10 +50,6 @@ class GUI(Frame):
         self.status_box(frame)
         self.init_serial()
         self.make_com_list(frame)
-        # 波特率选择提示
-        self.lab2 = Label(frame, text='波特率')
-        self.lab2.grid(row=2, column=0, sticky=W)
-        self.make_baudrate_list(frame)
         # 输出框提示
         self.lab3 = Label(frame, text='收到的信息')
         self.lab3.grid(row=0, column=1, sticky=W)
@@ -81,7 +77,7 @@ class GUI(Frame):
         self.data_button = Button(frame, text='模拟数据', command=self.generate_data)
         self.data_button.grid(row=14, column=1, sticky=W)
 
-        # master.bind('<<data_received>>', self.data_received)
+        # window.bind('<<data_received>>', self.data_received)
         bind_event_data(window, '<<data_received>>', self.data_received)
 
     def make_menu_bar(self, window):
@@ -99,6 +95,8 @@ class GUI(Frame):
 
     def data_received(self, event):
         data = event.data
+        self.show.delete(0.0, END)
+        self.show.insert(0.0, data)
 
     def status_box(self, frame):
         # 串口信息提示框
@@ -110,19 +108,9 @@ class GUI(Frame):
         thread_data.daemon = True
         thread_data.start()
 
-    def make_baudrate_list(self, frame):
-        # 波特率选择下拉菜单
-        self.boxValueBaudrate = IntVar()
-        self.BaudrateChoice = ttk.Combobox(frame, textvariable=self.boxValueBaudrate, state='readonly')
-        self.BaudrateChoice['value'] = (9600, 115200)
-        self.BaudrateChoice.current(0)
-        self.BaudrateChoice.bind('<<ComboboxSelected>>', self.ChoiceBaudrate)
-        self.BaudrateChoice.grid(row=3, column=0, sticky=W)
-        self.closing = False
-
     def init_serial(self):
         # 串口初始化配置
-        self.ser = Serial()
+        self.ser = Serial(baudrate=115200, bytesize=EIGHTBITS, parity=PARITY_NONE, stopbits=STOPBITS_ONE)
 
     def make_com_list(self, frame):
         # 串口号选择下拉菜单
@@ -160,8 +148,6 @@ class GUI(Frame):
         context1 = self.input.get() + '\n'
         print('about to write ', context1.encode('utf-8'))
         self.ser.write(context1.encode('utf-8'))
-        # self.show.delete(0.0, END)
-        # self.show.insert(0.0, output)
 
     def open_serial(self):
         self.ser.setPort(self.port)
