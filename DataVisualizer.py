@@ -35,18 +35,22 @@ class DataVisualizer:
         while self.ser.isOpen():
             n = self.ser.inWaiting()
             if n > 0:
-                data = self.ser.readline().decode('utf-8')
+                data = self.ser.read(n)
+                data = data.decode('utf-8')
                 self.window.event_generate('<<data_received>>', when='tail', data=data)
                 self.append_data_to_file(data)
                 self.plot(data)
 
     def plot(self, data):
-        self.index += 1
-        self.x.append(self.index)
-        self.y.append(data)
+        try:
+            self.index += 1
+            self.x.append(self.index)
+            self.y.append(data)
 
-        self.chart.scatter(self.x, self.y, color='blue')
-        self.canvas.draw()
+            self.chart.scatter(self.x, self.y, color='blue')
+            self.canvas.draw()
+        except ValueError:
+            pass
 
     def plot_csv(self, csv_file):
         data = pd.read_csv(csv_file, '\, *', engine='python')

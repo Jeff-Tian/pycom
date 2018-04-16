@@ -145,9 +145,9 @@ class GUI(Frame):
         print(self.baudrate)
 
     def submit(self):
-        context1 = self.input.get() + '\n'
+        context1 = self.input.get()
         print('about to write ', context1.encode('utf-8'))
-        self.ser.write(context1.encode('utf-8'))
+        self.ser.write(bytearray(context1.encode('utf-8')))
 
     def open_serial(self):
         self.ser.setPort(self.port)
