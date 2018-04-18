@@ -87,11 +87,18 @@ class GUI(Frame):
         file_menu.add_separator()
         file_menu.add_command(label='退出', command=self.close_window)
         menu_bar.add_cascade(label='文件', menu=file_menu)
+
+        command_menu = Menu(menu_bar, tearoff=1)
+        command_menu.add_command(label='登录 AA 4A 4C 0C 00 81 02 00 01 11 11 22 22 02 04 01 01',
+                                 command=lambda: self.issue_command())
         window.config(menu=menu_bar)
 
     def open_file(self):
         file_path = filedialog.askopenfilename(initialdir='.', title="选择文件", filetypes=[('逗号分隔文件', '*.*')])
         self.data_visualizer.plot_csv(file_path)
+
+    def issue_command(self):
+        pass
 
     def data_received(self, event):
         data = event.data

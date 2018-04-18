@@ -1,6 +1,6 @@
 import threading
 
-from time import gmtime
+from time import gmtime, sleep
 from time import strftime
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -33,13 +33,11 @@ class DataVisualizer:
 
     def display_data_from_port(self):
         while self.ser.isOpen():
-            n = self.ser.inWaiting()
-            if n > 0:
-                data = self.ser.read(n)
-                data = data.decode('utf-8')
-                self.window.event_generate('<<data_received>>', when='tail', data=data)
-                self.append_data_to_file(data)
-                self.plot(data)
+            data = self.ser.readline()
+            data = data.decode('utf-8')[:-1]
+            self.window.event_generate('<<data_received>>', when='tail', data=data)
+            self.append_data_to_file(data)
+            self.plot(data)
 
     def plot(self, data):
         try:
@@ -65,7 +63,7 @@ class DataVisualizer:
             self.first_write = False
 
         with open(self.file_name, 'a') as data_file:
-            data_file.writelines(['{},{}'.format(strftime('%Y-%m-%d %H:%M:%S', gmtime()), data)])
+            data_file.writelines(['{},{}'.format(strftime('%Y-%m-%d %H:%M:%S', gmtime()), data), '\n'])
 
     def write_data_to_file(self):
         with open(self.file_name, 'w') as data_file:
