@@ -82,23 +82,48 @@ class GUI(Frame):
 
     def make_menu_bar(self, window):
         menu_bar = Menu(window)
+
         file_menu = Menu(menu_bar, tearoff=0)
         file_menu.add_command(label='打开', command=self.open_file)
         file_menu.add_separator()
         file_menu.add_command(label='退出', command=self.close_window)
         menu_bar.add_cascade(label='文件', menu=file_menu)
 
-        command_menu = Menu(menu_bar, tearoff=1)
+        command_menu = Menu(menu_bar, tearoff=0)
         command_menu.add_command(label='登录 AA 4A 4C 0C 00 81 02 00 01 11 11 22 22 02 04 01 01',
-                                 command=lambda: self.issue_command())
+                                 command=lambda: self.issue_command(bytearray(
+                                     [0xAA, 0x4A, 0x4C, 0x0C, 0x00, 0x81, 0x02, 0x00, 0x01, 0x11, 0x11, 0x22, 0x22,
+                                      0x02, 0x04, 0x01, 0x01])))
+        command_menu.add_command(label='开始试验 AA 4A 4C 05 00 84 02 00 01 47', command=lambda: self.issue_command(
+            bytearray([0xAA, 0x4A, 0x4C, 0x05, 0x00, 0x84, 0x02, 0x00, 0x01, 0x47])))
+        command_menu.add_command(label='结束试验 AA 4A 4C 05 00 84 02 00 01 4F', command=lambda: self.issue_command(
+            bytearray([0xAA, 0x4A, 0x4C, 0x05, 0x00, 0x84, 0x02, 0x00, 0x01, 0x4F])))
+        command_menu.add_command(label='蜂鸣器频率设置 AA 4A 4C 09 00 84 02 00 01 41 34 05 00 00',
+                                 command=lambda: self.issue_command(bytearray(
+                                     [0xAA, 0x4A, 0x4C, 0x09, 0x00, 0x84, 0x02, 0x00, 0x01, 0x41, 0x34, 0x05, 0x00,
+                                      0x00])))
+        command_menu.add_command(label='蜂鸣器开关 AA 4A 4C 06 00 84 02 00 01 42 88', command=lambda: self.issue_command(
+            bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x42, 0x88])))
+        command_menu.add_command(label='灯光开关 AA 4A 4C 06 00 84 02 00 01 4C 88', command=lambda: self.issue_command(
+            bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x4C, 0x88])))
+        command_menu.add_command(label='加电开关 AA 4A 4C 06 00 84 02 00 01 45 88', command=lambda: self.issue_command(
+            bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45, 0x88])))
+        command_menu.add_command(label='重力数据返回 AA 4A 4C 04 00 86 0F 00 01', command=lambda: self.issue_command(
+            bytearray([0xAA, 0x4A, 0x4C, 0x04, 0x00, 0x86, 0x0F, 0x00, 0x01])))
+
+        menu_bar.add_cascade(label='命令', menu=command_menu)
+
         window.config(menu=menu_bar)
 
     def open_file(self):
         file_path = filedialog.askopenfilename(initialdir='.', title="选择文件", filetypes=[('逗号分隔文件', '*.*')])
         self.data_visualizer.plot_csv(file_path)
 
-    def issue_command(self):
-        pass
+    def issue_command(self, command):
+        if self.ser.is_open:
+            self.ser.write(command)
+        else:
+            messagebox.showinfo("不能发送命令", "COM 端口没有打开！")
 
     def data_received(self, event):
         data = event.data
