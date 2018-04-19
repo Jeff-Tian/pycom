@@ -10,6 +10,7 @@ import serial
 
 from DataGenerator import *
 from DataVisualizer import DataVisualizer
+from FrightenDevice import FrightenDevice
 
 __author__ = 'freedom'
 
@@ -110,6 +111,8 @@ class GUI(Frame):
             bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45, 0x88])))
         command_menu.add_command(label='重力数据返回 AA 4A 4C 04 00 86 0F 00 01', command=lambda: self.issue_command(
             bytearray([0xAA, 0x4A, 0x4C, 0x04, 0x00, 0x86, 0x0F, 0x00, 0x01])))
+        command_menu.add_command(label='亮灯 AA 4A 4C 06 00 84 02 00 01 45 11', command=lambda: self.issue_command(
+            bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45, 0x11])))
 
         menu_bar.add_cascade(label='命令', menu=command_menu)
 
@@ -122,6 +125,8 @@ class GUI(Frame):
     def issue_command(self, command):
         if self.ser.is_open:
             self.ser.write(command)
+            n = self.ser.inWaiting()
+            print('n = ', n)
         else:
             messagebox.showinfo("不能发送命令", "COM 端口没有打开！")
 
@@ -188,8 +193,11 @@ class GUI(Frame):
             self.index = 0
             self.showSerial.delete(0.0, END)
             self.showSerial.insert(0.0, "Serial has been opened!")
-            self.data_visualizer = DataVisualizer(self.window, self.ser)
-            self.data_visualizer.start()
+            # self.data_visualizer = DataVisualizer(self.window, self.ser)
+            # self.data_visualizer.start()
+
+            self.frighten_device = FrightenDevice(self.window, self.ser)
+            self.frighten_device.start()
 
     def close_serial(self):
         self.ser.close()

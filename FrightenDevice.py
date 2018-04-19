@@ -8,10 +8,10 @@ from matplotlib.figure import Figure
 
 import pandas as pd
 
-__all__ = ['DataVisualizer']
+__all__ = ['FrightenDevice']
 
 
-class DataVisualizer:
+class FrightenDevice:
     def __init__(self, window, ser):
         self.file_name = strftime('%Y-%m-%d %H%M%S.csv', gmtime())
         self.window = window
@@ -33,12 +33,12 @@ class DataVisualizer:
 
     def display_data_from_port(self):
         while self.ser.isOpen():
-            print('reading...')
-            data = self.ser.readline()
-            data = data.decode('utf-8')[:-1]
-            self.window.event_generate('<<data_received>>', when='tail', data=data)
-            self.append_data_to_file(data)
-            self.plot(data)
+            n = self.ser.inWaiting()
+            if n > 0:
+                data = self.ser.read(n)
+                data = [hex(c) for c in data]
+                self.window.event_generate('<<data_received>>', when='tail', data=data)
+                print(data)
 
     def plot(self, data):
         try:
