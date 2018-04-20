@@ -33,6 +33,17 @@ def bind_event_data(widget, sequence, func, add=None):
     widget.tk.call('bind', widget._w, sequence, cmd)
 
 
+def hex_decode(bytes):
+    return [try_hex_encode(c) for c in bytes]
+
+
+def try_hex_encode(c):
+    try:
+        return hex(c)
+    except TypeError:
+        return c
+
+
 class GUI(Frame):
     def __init__(self, window):
         window.title('动物惊吓实验')
@@ -94,6 +105,8 @@ class GUI(Frame):
         command_menu.add_command(label='登录 AA 4A 4C 0C 00 81 02 00 01 11 11 22 22 02 04 01 01',
                                  command=lambda: self.issue_command(bytearray(
                                      [0xAA, 0x4A, 0x4C, 0x0C, 0x00, 0x81, 0x02, 0x00, 0x01, 0x11, 0x11, 0x22, 0x22,
+                                      0x02, 0x04, 0x01, 0x01]), bytearray(
+                                     [0xaa, 0x4a, 0x4c, 0x0c, 0x00, 0x82, 0x03, 0x00, 0x01, 0x33, 0x33, 0x44, 0x44,
                                       0x02, 0x04, 0x01, 0x01])))
         command_menu.add_command(label='开始试验 AA 4A 4C 05 00 84 02 00 01 47', command=lambda: self.issue_command(
             bytearray([0xAA, 0x4A, 0x4C, 0x05, 0x00, 0x84, 0x02, 0x00, 0x01, 0x47])))
@@ -122,30 +135,37 @@ class GUI(Frame):
         file_path = filedialog.askopenfilename(initialdir='.', title="选择文件", filetypes=[('逗号分隔文件', '*.*')])
         self.data_visualizer.plot_csv(file_path)
 
-    def issue_command(self, command):
-        self.command_thread = threading.Thread(target=self.issue_command_in_another_thread, args=[command])
+    def issue_command(self, command, expected_response):
+        self.command_thread = threading.Thread(target=self.issue_command_in_another_thread,
+                                               args=[command, expected_response])
         self.command_thread.daemon = True
         self.command_thread.start()
 
-    def issue_command_in_another_thread(self, command):
+    def issue_command_in_another_thread(self, command, expected_response):
         if self.ser.is_open:
             self.ser.write(command)
-            self.get_response()
+            self.get_response(expected_response)
         else:
             messagebox.showinfo('不能发送命令', 'COM 端口没有打开！')
 
-    def get_response(self):
+    def get_response(self, expected_response):
         while True:
             n = self.ser.inWaiting()
             if n > 0:
                 data = self.ser.read(n)
-                print('data = ', data)
+                if data == expected_response:
+                    messagebox.showinfo('成功', '命令执行成功。')
+                else:
+                    messagebox.showinfo('失败', '命令返回：', hex_decode(data), ' 期待：', hex_decode(expected_response))
+
+                self.window.event_generate('<<data_received>>', when='tail', data=hex_decode(data))
+                print('data = ', hex_decode(data))
                 break
 
     def data_received(self, event):
-        data = event.data
+        print(event.data)
         self.show.delete(0.0, END)
-        self.show.insert(0.0, data)
+        self.show.insert(0.0, event.data)
 
     def status_box(self, frame):
         # 串口信息提示框
