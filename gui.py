@@ -3,7 +3,7 @@ import threading
 from tkinter import filedialog
 
 import matplotlib.pyplot as plt
-from time import gmtime
+from time import gmtime, sleep
 from time import strftime
 
 import serial
@@ -123,12 +123,24 @@ class GUI(Frame):
         self.data_visualizer.plot_csv(file_path)
 
     def issue_command(self, command):
+        self.command_thread = threading.Thread(target=self.issue_command_in_another_thread, args=[command])
+        self.command_thread.daemon = True
+        self.command_thread.start()
+
+    def issue_command_in_another_thread(self, command):
         if self.ser.is_open:
             self.ser.write(command)
-            n = self.ser.inWaiting()
-            print('n = ', n)
+            self.get_response()
         else:
-            messagebox.showinfo("不能发送命令", "COM 端口没有打开！")
+            messagebox.showinfo('不能发送命令', 'COM 端口没有打开！')
+
+    def get_response(self):
+        while True:
+            n = self.ser.inWaiting()
+            if n > 0:
+                data = self.ser.read(n)
+                print('data = ', data)
+                break
 
     def data_received(self, event):
         data = event.data
@@ -176,11 +188,6 @@ class GUI(Frame):
     def select_port(self, event):
         self.port = self.selected_port.get()
 
-    def ChoiceBaudrate(self, event):
-        self.baudrate = self.boxValueBaudrate.get()
-        self.ser.setBaudrate(self.baudrate)
-        print(self.baudrate)
-
     def submit(self):
         context1 = self.input.get()
         print('about to write ', context1.encode('utf-8'))
@@ -196,8 +203,8 @@ class GUI(Frame):
             # self.data_visualizer = DataVisualizer(self.window, self.ser)
             # self.data_visualizer.start()
 
-            self.frighten_device = FrightenDevice(self.window, self.ser)
-            self.frighten_device.start()
+            # self.frighten_device = FrightenDevice(self.window, self.ser)
+            # self.frighten_device.start()
 
     def close_serial(self):
         self.ser.close()
