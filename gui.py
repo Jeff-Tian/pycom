@@ -11,6 +11,7 @@ import serial
 from DataGenerator import *
 from DataVisualizer import DataVisualizer
 from FrightenDevice import FrightenDevice
+import sys
 
 __author__ = 'freedom'
 __all__ = ['hex_decode']
@@ -46,7 +47,10 @@ def try_hex_encode(c):
 
 
 class GUI(Frame):
-    def __init__(self, window):
+    def __init__(self, window, debug_mode):
+
+        self.debug_mode = debug_mode
+        print('debug mode = ', self.debug_mode)
         window.title('动物惊吓实验')
 
         self.make_menu_bar(window)
@@ -60,7 +64,6 @@ class GUI(Frame):
         # 串口号提示
         self.lab1 = Label(frame, text='序列号')
         self.lab1.grid(row=0, column=0, sticky=W)
-        self.status_box(frame)
         self.init_serial()
         self.make_com_list(frame)
         # 输出框提示
@@ -92,6 +95,18 @@ class GUI(Frame):
 
         # window.bind('<<data_received>>', self.data_received)
         bind_event_data(window, '<<data_received>>', self.data_received)
+
+        self.make_status_bar(window)
+
+    def make_status_bar(self, window):
+        status = Label(window, text="准备就绪", bd=1, relief=SUNKEN, anchor=W)
+        status.pack(side=BOTTOM, fill=X)
+        self.status_bar = status
+
+    def change_status(self, text=None):
+        self.status_bar.config(text=text)
+        self.status_bar.update_idletasks()
+        self.status_bar.update_idletasks()
 
     def make_menu_bar(self, window):
         menu_bar = Menu(window)
@@ -180,11 +195,6 @@ class GUI(Frame):
         self.show.delete(0.0, END)
         self.show.insert(0.0, event.data)
 
-    def status_box(self, frame):
-        # 串口信息提示框
-        self.showSerial = Text(frame, width=20, height=2, wrap=WORD)
-        self.showSerial.grid(row=12, column=0, sticky=W)
-
     def generate_data(self):
         thread_data = threading.Thread(target=DataGenerator.randomize, args=[self.ser])
         thread_data.daemon = True
@@ -208,8 +218,9 @@ class GUI(Frame):
             if len(self.ports_list['value']) == 1:
                 self.open_serial()
         else:
-            messagebox.showinfo("程序停止", "没有可用的 COM 端口！")
-            exit(1)
+            if not self.debug_mode:
+                messagebox.showinfo("程序停止", "没有可用的 COM 端口！")
+                exit(1)
 
     def get_available_com_ports(self):
         ports = []
@@ -230,20 +241,12 @@ class GUI(Frame):
         self.ser.setPort(self.port)
         self.ser.open()
         if self.ser.isOpen():
-            self.index = 0
-            self.showSerial.delete(0.0, END)
-            self.showSerial.insert(0.0, "Serial has been opened!")
-            # self.data_visualizer = DataVisualizer(self.window, self.ser)
-            # self.data_visualizer.start()
-
-            # self.frighten_device = FrightenDevice(self.window, self.ser)
-            # self.frighten_device.start()
+            self.change_status('串口已被打开！')
 
     def close_serial(self):
         self.ser.close()
         if not self.ser.isOpen():
-            self.showSerial.delete(0.0, END)
-            self.showSerial.insert(0.0, "Serial has been closed!")
+            self.change_status('串口已被关闭！')
 
     def close_window(self):
         print('closing window')
@@ -260,9 +263,18 @@ class GUI(Frame):
                 self.append_data_to_file(response)
 
 
+def debug_mode(argv):
+    try:
+        print('debug mode = ', argv.index('--debug'))
+        return True
+    except ValueError as ex:
+        print(ex)
+        return False
+
+
 if __name__ == '__main__':
     root = Tk()
     # root.geometry("3000x4000")
-    app = GUI(root)
+    app = GUI(root, debug_mode(sys.argv))
 
     root.mainloop()
