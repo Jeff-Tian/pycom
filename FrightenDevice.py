@@ -60,12 +60,9 @@ class FrightenDevice:
         data = pd.read_csv(csv_file, '\, *', engine='python')
         self.x = data.timestamp
         self.y = data.data
-        # self.chart.xaxis_date()
-        # self.chart.xaxis.set_major_locator(dates.SecondLocator())
-        # self.chart.xaxis.set_major_formatter(dates.DateFormatter('%M:%S:%f'))
-        # self.chart.scatter(self.x, self.y)
         self.chart.plot(self.x, self.y, 'bo--')
         self.chart.set_xticklabels(self.x, rotation=17)
+        self.chart.set_title(label=u'PP = {}'.format(np.average(self.y)))
         self.canvas.draw()
 
     def append_data_to_file(self, data=None):

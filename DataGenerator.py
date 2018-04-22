@@ -14,4 +14,4 @@ class DataGenerator(object):
 
             gui.frighten_device.append_data_to_file(data)
 
-            time.sleep(0.2)
+            time.sleep(0.001)
