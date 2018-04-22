@@ -98,6 +98,8 @@ class GUI(Frame):
 
         self.make_status_bar(window)
 
+        self.frighten_device = FrightenDevice(window, self.ser)
+
     def make_status_bar(self, window):
         status = Label(window, text="准备就绪", bd=1, relief=SUNKEN, anchor=W)
         status.pack(side=BOTTOM, fill=X)
@@ -157,7 +159,7 @@ class GUI(Frame):
 
     def open_file(self):
         file_path = filedialog.askopenfilename(initialdir='.', title="选择文件", filetypes=[('逗号分隔文件', '*.*')])
-        self.data_visualizer.plot_csv(file_path)
+        self.frighten_device.plot_csv(file_path)
 
     def issue_command(self, command, expected_response):
         self.command_thread = threading.Thread(target=self.issue_command_in_another_thread,
@@ -274,7 +276,6 @@ def debug_mode(argv):
 
 if __name__ == '__main__':
     root = Tk()
-    # root.geometry("3000x4000")
+    root.state('zoomed')
     app = GUI(root, debug_mode(sys.argv))
-
     root.mainloop()
