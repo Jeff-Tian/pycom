@@ -7,10 +7,11 @@ __all__ = ['DataGenerator']
 
 class DataGenerator(object):
     @staticmethod
-    def randomize(ser):
+    def randomize(gui, ser):
         while True:
             data = random.random()
-            if ser.isOpen():
-                ser.write((str(data) + '\n').encode('utf-8'))
+            gui.change_status(data)
+
+            gui.frighten_device.append_data_to_file(data)
 
             time.sleep(0.2)

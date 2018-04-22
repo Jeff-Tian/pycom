@@ -3,8 +3,13 @@ import threading
 from time import gmtime, sleep
 from time import strftime
 
+from matplotlib import dates
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+import datetime
+import matplotlib.pyplot as plt
+import numpy as np
+from datetime import datetime
 
 import pandas as pd
 
@@ -21,7 +26,7 @@ class FrightenDevice:
         self.y = []
         self.first_write = True
 
-        self.fig = Figure(figsize=(6, 6))
+        self.fig = Figure(figsize=(window.winfo_screenwidth(), 6))
         self.chart = self.fig.add_subplot(111)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.window)
         self.canvas.get_tk_widget().pack()
@@ -53,19 +58,25 @@ class FrightenDevice:
 
     def plot_csv(self, csv_file):
         data = pd.read_csv(csv_file, '\, *', engine='python')
-        self.x = [i for i in range(len(data.data))]
+        self.x = data.timestamp
         self.y = data.data
-        self.chart.scatter(self.x, self.y)
+        # self.chart.xaxis_date()
+        # self.chart.xaxis.set_major_locator(dates.SecondLocator())
+        # self.chart.xaxis.set_major_formatter(dates.DateFormatter('%M:%S:%f'))
+        # self.chart.scatter(self.x, self.y)
+        self.chart.plot(self.x, self.y, 'bo--')
+        self.chart.set_xticklabels(self.x, rotation=17)
         self.canvas.draw()
 
     def append_data_to_file(self, data=None):
         if self.first_write:
-            self.write_data_to_file()
+            self.write_file()
             self.first_write = False
 
         with open(self.file_name, 'a') as data_file:
-            data_file.writelines(['{},{}'.format(strftime('%Y-%m-%d %H:%M:%S', gmtime()), data), '\n'])
+            data_file.writelines(
+                ['{},{}'.format(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f'), data), '\n'])
 
-    def write_data_to_file(self):
+    def write_file(self):
         with open(self.file_name, 'w') as data_file:
             data_file.writelines(['{},{}'.format('timestamp', 'data'), '\n'])

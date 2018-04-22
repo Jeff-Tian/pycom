@@ -90,10 +90,6 @@ class GUI(Frame):
 
         window.protocol('WM_DELETE_WINDOW', self.close_window)
 
-        self.data_button = Button(frame, text='模拟数据', command=self.generate_data)
-        self.data_button.grid(row=14, column=1, sticky=W)
-
-        # window.bind('<<data_received>>', self.data_received)
         bind_event_data(window, '<<data_received>>', self.data_received)
 
         self.make_status_bar(window)
@@ -154,6 +150,7 @@ class GUI(Frame):
             bytearray([0xaa, 0x4a, 0x4c, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x45, 0x11])))
 
         menu_bar.add_cascade(label='命令', menu=command_menu)
+        menu_bar.add_command(label='测试数据', command=self.generate_data)
 
         window.config(menu=menu_bar)
 
@@ -198,7 +195,7 @@ class GUI(Frame):
         self.show.insert(0.0, event.data)
 
     def generate_data(self):
-        thread_data = threading.Thread(target=DataGenerator.randomize, args=[self.ser])
+        thread_data = threading.Thread(target=DataGenerator.randomize, args=[self, self.ser])
         thread_data.daemon = True
         thread_data.start()
 
