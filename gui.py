@@ -12,6 +12,7 @@ from DataGenerator import *
 from DataVisualizer import DataVisualizer
 from FrightenDevice import FrightenDevice
 import sys
+import yaml
 
 __author__ = 'freedom'
 __all__ = ['hex_decode']
@@ -47,12 +48,13 @@ def try_hex_encode(c):
 
 
 class GUI(Frame):
-    def __init__(self, window, debug_mode):
+    def __init__(self, window, debug_mode=False):
 
         self.debug_mode = debug_mode
         print('debug mode = ', self.debug_mode)
         window.title('动物惊吓实验')
 
+        self.make_status_bar(window)
         self.make_menu_bar(window)
 
         self.window = window
@@ -92,8 +94,6 @@ class GUI(Frame):
 
         bind_event_data(window, '<<data_received>>', self.data_received)
 
-        self.make_status_bar(window)
-
         self.frighten_device = FrightenDevice(window, self.ser)
 
     def make_status_bar(self, window):
@@ -110,7 +110,9 @@ class GUI(Frame):
         menu_bar = Menu(window)
 
         file_menu = Menu(menu_bar, tearoff=0)
-        file_menu.add_command(label='打开', command=self.open_file)
+        file_menu.add_command(label='打开数据文件', command=self.open_file)
+        file_menu.add_command(label='加载配置', command=self.read_config)
+        file_menu.add_command(label='保存配置', command=self.save_config)
         file_menu.add_separator()
         file_menu.add_command(label='退出', command=self.close_window)
         menu_bar.add_cascade(label='文件', menu=file_menu)
@@ -157,6 +159,16 @@ class GUI(Frame):
     def open_file(self):
         file_path = filedialog.askopenfilename(initialdir='.', title="选择文件", filetypes=[('逗号分隔文件', '*.*')])
         self.frighten_device.plot_csv(file_path)
+
+    def read_config(self):
+        with open('./config.yaml', 'r') as stream:
+            self.config = yaml.load(stream)
+
+        return self.config
+
+    def save_config(self):
+        with io.open('./config.yaml', 'w', encoding='utf8') as outfile:
+            yaml.dump(self.config, outfile, default_flow_style=False, allow_unicode=True)
 
     def issue_command(self, command, expected_response):
         self.command_thread = threading.Thread(target=self.issue_command_in_another_thread,

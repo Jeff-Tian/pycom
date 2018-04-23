@@ -3,3 +3,4 @@ easygui
 plotly
 pandas_datareader
 matplotlib
+pyyaml

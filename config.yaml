@@ -1,0 +1,23 @@
+commands:
+  - command:
+    type: 'light on'
+    at: 3
+  - command:
+    type: 'light off'
+    at: 8
+  - command:
+    type: '加电'
+    at: 10
+  - command:
+    type: '关电'
+    at: 12
+  - command:
+    type: 'noise on'
+    at: 14
+    db: 20
+    beep: beep2
+  - command:
+    type: 'noise off'
+    at: 16
+    db: 0
+    beep: beep2
