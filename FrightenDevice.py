@@ -13,6 +13,7 @@ from datetime import datetime
 
 import pandas as pd
 
+from  PPI import *
 from helper import hex_decode
 
 __all__ = ['FrightenDevice']
@@ -45,7 +46,7 @@ class FrightenDevice:
         self.gui.change_status('开始询问重力数据……')
 
     def handle_gravity_data(self, data):
-        self.gui.change_status(hex_decode(data))
+        self.gui.change_status('{}：{}g'.format(hex_decode(data), PPI.parse_gravity_data(data)))
 
     def ask_gravity_data(self):
         while self.ser.isOpen():
@@ -54,6 +55,8 @@ class FrightenDevice:
 
     def issue_command(self, command, expected_response):
         if self.ser.isOpen:
+            self.gui.change_status('发送命令：{}'.format(hex_decode(command)))
+            self.last_command = command
             self.ser.write(command)
             self.get_response(expected_response)
         else:
@@ -95,6 +98,7 @@ class FrightenDevice:
     def get_response(self, expected_response=None):
         while True:
             n = self.ser.inWaiting()
+            self.gui.change_status('等待命令 {} 的回复……'.format(hex_decode(self.last_command)))
             if n > 0:
                 data = self.ser.read(n)
 
