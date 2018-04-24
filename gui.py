@@ -14,6 +14,8 @@ from FrightenDevice import FrightenDevice
 import sys
 import yaml
 
+from helper import hex_decode
+
 __author__ = 'freedom'
 __all__ = ['hex_decode']
 
@@ -34,17 +36,6 @@ def bind_event_data(widget, sequence, func, add=None):
     funcid = widget._register(func, _substitute, needcleanup=1)
     cmd = '{0}if {{"[{1} %d]" == "break"}} break\n'.format('+' if add else '', funcid)
     widget.tk.call('bind', widget._w, sequence, cmd)
-
-
-def hex_decode(bytes):
-    return [try_hex_encode(c) for c in bytes]
-
-
-def try_hex_encode(c):
-    try:
-        return hex(c)
-    except TypeError:
-        return c
 
 
 class GUI(Frame):
@@ -94,7 +85,7 @@ class GUI(Frame):
 
         bind_event_data(window, '<<data_received>>', self.data_received)
 
-        self.frighten_device = FrightenDevice(window, self.ser)
+        self.read_config()
 
     def make_status_bar(self, window):
         status = Label(window, text="准备就绪", bd=1, relief=SUNKEN, anchor=W)
@@ -253,6 +244,8 @@ class GUI(Frame):
         self.ser.open()
         if self.ser.isOpen():
             self.change_status('串口已被打开！')
+            self.frighten_device = FrightenDevice(self)
+            self.frighten_device.start()
 
     def close_serial(self):
         self.ser.close()
