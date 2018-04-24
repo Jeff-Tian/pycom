@@ -44,9 +44,13 @@ class FrightenDevice:
         thread.start()
         self.gui.change_status('开始询问重力数据……')
 
+    def handle_gravity_data(self, data):
+        self.gui.change_status(hex_decode(data))
+
     def ask_gravity_data(self):
         while self.ser.isOpen():
-            self.issue_command(bytearray([0xAA, 0x4A, 0x4C, 0x04, 0x00, 0x86, 0x0F, 0x00, 0x01]), bytearray([0xaa]))
+            self.issue_command(bytearray([0xAA, 0x4A, 0x4C, 0x04, 0x00, 0x86, 0x0F, 0x00, 0x01]),
+                               self.handle_gravity_data)
 
     def issue_command(self, command, expected_response):
         if self.ser.isOpen:
@@ -88,12 +92,17 @@ class FrightenDevice:
         with open(self.file_name, 'w') as data_file:
             data_file.writelines(['{},{}'.format('timestamp', 'data'), '\n'])
 
-    def get_response(self, expected_response):
+    def get_response(self, expected_response=None):
         while True:
             n = self.ser.inWaiting()
             if n > 0:
                 data = self.ser.read(n)
-                if data == expected_response:
+
+                if expected_response is None:
+                    self.gui.change_status('收到数据：{}'.format(hex_decode(data)))
+                elif callable(expected_response):
+                    expected_response(data)
+                elif data == expected_response:
                     self.gui.change_status('命令执行成功。{}'.format(hex_decode(data)))
                 else:
                     self.gui.change_status('命令执行失败。{}{}{}{}'.format('命令返回：', hex_decode(data), ' 期待：',
