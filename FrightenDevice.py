@@ -30,7 +30,7 @@ class FrightenDevice:
         self.y = []
         self.first_write = True
 
-        self.fig = Figure(figsize=(self.window.winfo_screenwidth(), 6))
+        self.fig = Figure(figsize=(self.window.winfo_screenwidth(), 3))
         self.chart = self.fig.add_subplot(111)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.window)
         self.canvas.get_tk_widget().pack()
@@ -40,10 +40,18 @@ class FrightenDevice:
         # thread.daemon = True
         # thread.start()
 
+        self.keep_ask = True
         thread = threading.Thread(target=self.ask_gravity_data, args=[])
         thread.daemon = True
         thread.start()
         self.gui.change_status('开始询问重力数据……')
+
+    def toggle_asking(self):
+        print('asking = ', self.keep_ask)
+        if self.keep_ask:
+            self.keep_ask = False
+        else:
+            self.keep_ask = True
 
     def handle_gravity_data(self, data):
         gravity_data = PPI.parse_gravity_data(data)
@@ -51,7 +59,7 @@ class FrightenDevice:
         self.plot_gravity_data(gravity_data)
 
     def ask_gravity_data(self):
-        while self.ser.isOpen():
+        while self.ser.isOpen() and self.keep_ask:
             self.issue_command(bytearray([0xAA, 0x4A, 0x4C, 0x04, 0x00, 0x86, 0x0F, 0x00, 0x01]),
                                self.handle_gravity_data)
 

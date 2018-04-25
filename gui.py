@@ -51,6 +51,7 @@ class GUI(Frame):
         self.window = window
         frame = Frame(window)
         frame.pack()
+
         # 串口设置相关变量
         self.port = "0"
         self.baudrate = 9600
@@ -246,6 +247,7 @@ class GUI(Frame):
             self.change_status('串口已被打开！')
             self.frighten_device = FrightenDevice(self)
             self.frighten_device.start()
+            self.make_frighten_controls()
 
     def close_serial(self):
         self.ser.close()
@@ -265,6 +267,17 @@ class GUI(Frame):
                 response = self.ser.readline().decode('utf-8')
                 print('response = ', strftime('%Y-%m-%d %H:%M:%S', gmtime()), response)
                 self.append_data_to_file(response)
+
+    def make_frighten_controls(self):
+        chk = ttk.Checkbutton(self.window, text='持续询问重力数据', command=self.frighten_device.toggle_asking)
+        # chk.grid(column=1, row=10, sticky=W)
+        chk.pack(pady=0, side=LEFT)
+        chk.state(['!alternate'])
+
+        if self.frighten_device.keep_ask:
+            chk.state(['selected'])
+        else:
+            chk.state(['!selected'])
 
 
 def debug_mode(argv):
