@@ -46,7 +46,9 @@ class FrightenDevice:
         self.gui.change_status('开始询问重力数据……')
 
     def handle_gravity_data(self, data):
-        self.gui.change_status('{}：{}g'.format(hex_decode(data), PPI.parse_gravity_data(data)))
+        gravity_data = PPI.parse_gravity_data(data)
+        self.gui.change_status('{}：{}g'.format(hex_decode(data), gravity_data))
+        self.plot_gravity_data(gravity_data)
 
     def ask_gravity_data(self):
         while self.ser.isOpen():
@@ -69,6 +71,19 @@ class FrightenDevice:
             self.y.append(data)
 
             self.chart.scatter(self.x, self.y, color='blue')
+            self.canvas.draw()
+        except ValueError:
+            pass
+
+    def plot_gravity_data(self, data):
+        try:
+            self.index += 1
+            self.x.append(self.index)
+            self.y.append(data)
+
+            self.chart.plot(self.x, self.y, 'bo--')
+            self.chart.set_xticklabels(self.x, rotation=17)
+            self.chart.set_title(label=u'PP = {}'.format(np.average(self.y)))
             self.canvas.draw()
         except ValueError:
             pass
