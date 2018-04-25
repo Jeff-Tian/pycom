@@ -60,29 +60,25 @@ class FrightenDevice:
             self.gui.change_status('发送命令：{}'.format(hex_decode(command)))
             self.last_command = command
             self.ser.write(command)
-            self.get_response(expected_response)
+            try:
+                self.get_response(expected_response)
+            except TimeoutError:
+                self.gui.change_status('超时未获得回复')
         else:
             self.gui.change_status('不能发送命令，COM 端口没有打开！')
 
-    def plot(self, data):
-        try:
-            self.index += 1
-            self.x.append(self.index)
-            self.y.append(data)
-
-            self.chart.scatter(self.x, self.y, color='blue')
-            self.canvas.draw()
-        except ValueError:
-            pass
-
     def plot_gravity_data(self, data):
+        points_per_screen = 30
+
         try:
             self.index += 1
+            # self.x.append(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f'))
             self.x.append(self.index)
             self.y.append(data)
 
-            self.chart.plot(self.x, self.y, 'bo--')
-            self.chart.set_xticklabels(self.x, rotation=17)
+            self.chart.cla()
+            self.chart.plot(self.x[-points_per_screen:], self.y[-points_per_screen:], 'bo--')
+            # self.chart.set_xticklabels(self.x[-points_per_screen:], rotation=17)
             self.chart.set_title(label=u'PP = {}'.format(np.average(self.y)))
             self.canvas.draw()
         except ValueError:
@@ -110,7 +106,9 @@ class FrightenDevice:
         with open(self.file_name, 'w') as data_file:
             data_file.writelines(['{},{}'.format('timestamp', 'data'), '\n'])
 
-    def get_response(self, expected_response=None):
+    def get_response(self, expected_response=None, timeout=1):
+        waited = 0
+
         while True:
             n = self.ser.inWaiting()
             self.gui.change_status('等待命令 {} 的回复……'.format(hex_decode(self.last_command)))
@@ -130,4 +128,8 @@ class FrightenDevice:
                 self.window.event_generate('<<data_received>>', when='tail', data=hex_decode(data))
                 break
             else:
+                if waited >= timeout:
+                    raise TimeoutError
+
                 sleep(0.1)
+                waited += 0.1
