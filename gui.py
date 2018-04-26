@@ -58,6 +58,7 @@ class GUI(Frame):
         # 串口号提示
         self.lab1 = Label(frame, text='序列号')
         self.lab1.grid(row=0, column=0, sticky=W)
+
         self.init_serial()
         self.make_com_list(frame)
         # 输出框提示
@@ -206,6 +207,8 @@ class GUI(Frame):
     def init_serial(self):
         # 串口初始化配置
         self.ser = Serial(baudrate=115200, bytesize=EIGHTBITS, parity=PARITY_NONE, stopbits=STOPBITS_ONE)
+        self.frighten_device = FrightenDevice(self)
+        self.make_frighten_controls()
 
     def make_com_list(self, frame):
         # 串口号选择下拉菜单
@@ -245,9 +248,7 @@ class GUI(Frame):
         self.ser.open()
         if self.ser.isOpen():
             self.change_status('串口已被打开！')
-            self.frighten_device = FrightenDevice(self)
             self.frighten_device.start()
-            self.make_frighten_controls()
 
     def close_serial(self):
         self.ser.close()

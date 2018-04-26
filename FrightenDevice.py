@@ -35,19 +35,19 @@ class FrightenDevice:
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.window)
         self.canvas.get_tk_widget().pack()
 
+        self.keep_ask = True
+
     def start(self):
         # thread = threading.Thread(target=self.display_data_from_port, args=[])
         # thread.daemon = True
         # thread.start()
 
-        self.keep_ask = True
         thread = threading.Thread(target=self.ask_gravity_data, args=[])
         thread.daemon = True
         thread.start()
         self.gui.change_status('开始询问重力数据……')
 
     def toggle_asking(self):
-        print('asking = ', self.keep_ask)
         if self.keep_ask:
             self.keep_ask = False
         else:
@@ -59,9 +59,10 @@ class FrightenDevice:
         self.plot_gravity_data(gravity_data)
 
     def ask_gravity_data(self):
-        while self.ser.isOpen() and self.keep_ask:
-            self.issue_command(bytearray([0xAA, 0x4A, 0x4C, 0x04, 0x00, 0x86, 0x0F, 0x00, 0x01]),
-                               self.handle_gravity_data)
+        while self.ser.isOpen:
+            if self.keep_ask:
+                self.issue_command(bytearray([0xAA, 0x4A, 0x4C, 0x04, 0x00, 0x86, 0x0F, 0x00, 0x01]),
+                                   self.handle_gravity_data)
 
     def issue_command(self, command, expected_response):
         if self.ser.isOpen:
