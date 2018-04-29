@@ -21,7 +21,6 @@ __all__ = ['FrightenDevice']
 
 class FrightenDevice:
     def __init__(self, gui):
-        self.file_name = strftime('%Y-%m-%d %H%M%S.csv', gmtime())
         self.gui = gui
         self.window = gui.window
         self.ser = gui.ser
@@ -37,6 +36,11 @@ class FrightenDevice:
 
         self.keep_ask = True
 
+        self.experiment_started = False
+
+    def init_filename(self):
+        self.file_name = strftime('%Y-%m-%d %H%M%S.csv', gmtime())
+
     def start(self):
         # thread = threading.Thread(target=self.display_data_from_port, args=[])
         # thread.daemon = True
@@ -46,6 +50,15 @@ class FrightenDevice:
         thread.daemon = True
         thread.start()
         self.gui.change_status('开始询问重力数据……')
+
+    def start_experiment(self):
+        self.init_filename()
+        self.experiment_started = True
+        for i, value in enumerate(self.gui.config['commands']):
+            self.set_command(value)
+
+    def stop_experiment(self):
+        self.experiment_started = False
 
     def toggle_asking(self):
         if self.keep_ask:
@@ -57,6 +70,8 @@ class FrightenDevice:
         gravity_data = PPI.parse_gravity_data(data)
         self.gui.change_status('{}：{}g'.format(hex_decode(data), gravity_data))
         self.plot_gravity_data(gravity_data)
+        if self.experiment_started:
+            self.append_data_to_file(gravity_data)
 
     def ask_gravity_data(self):
         while self.ser.isOpen:
@@ -142,3 +157,9 @@ class FrightenDevice:
 
                 sleep(0.1)
                 waited += 0.1
+
+    def set_command(self, command):
+        threading.Timer(command['at'], lambda: self.execute_command(command)).start()
+
+    def execute_command(self, command):
+        print('executing command: {}..., at {}'.format(command['command'], gmtime()))

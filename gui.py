@@ -146,8 +146,12 @@ class GUI(Frame):
 
         menu_bar.add_cascade(label='命令', menu=command_menu)
         menu_bar.add_command(label='测试数据', command=self.generate_data)
+        menu_bar.add_command(label='开始实验', command=self.start_experiment)
 
         window.config(menu=menu_bar)
+
+    def start_experiment(self):
+        self.frighten_device.start_experiment()
 
     def open_file(self):
         file_path = filedialog.askopenfilename(initialdir='.', title="选择文件", filetypes=[('逗号分隔文件', '*.*')])
