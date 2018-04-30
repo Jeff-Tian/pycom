@@ -15,5 +15,7 @@ commands:
     beep: beep2
   - command: 'noise off'
     at: 16
+  - command: 'flash on'
+    at: 17
   - command: 'end experiment'
     at: 18

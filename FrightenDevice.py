@@ -196,6 +196,8 @@ class FrightenDevice:
         print('executing command: {}..., at {}'.format(command['command'], gmtime()))
         if command['command'] == 'login':
             self.issue_command(commands['login'], command_responses['login'])
+        if command['command'] == 'flash on':
+            self.issue_command(commands['flash_on'], command_responses['flash_on'])
         if command['command'] == 'end experiment':
             self.issue_command(commands['end_experiment'], command_responses['end_experiment'])
             self.stop_experiment()
