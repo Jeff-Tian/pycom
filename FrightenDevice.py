@@ -21,7 +21,7 @@ __all__ = ['FrightenDevice', 'commands', 'command_responses', 'printx']
 
 
 def printx(arg1, arg2=None, arg3=None, arg4=None, arg5=None, arg6=None):
-    print(arg1, arg2, arg3, arg4, arg5, arg6)
+    # print(arg1, arg2, arg3, arg4, arg5, arg6)
     pass
 
 
@@ -170,6 +170,10 @@ class FrightenDevice:
         data = pd.read_csv(csv_file, '\, *', engine='python')
         self.x = data.timestamp
         self.y = data.data
+
+        self.chart.cla()
+        self.chart.clear()
+
         self.chart.plot(self.x, self.y, 'bo--')
         self.chart.set_xticklabels(self.x, rotation=17)
         self.chart.set_title(label=u'PP = {}'.format(np.average(self.y)))
@@ -225,6 +229,7 @@ class FrightenDevice:
             return
 
         printx('executing command: {}..., at {}'.format(command['command'].encode('utf8').decode('utf8'), gmtime()))
+        original_asking_status = self.keep_ask
         self.toggle_asking(False)
         self.read_in_residual_data()
 
@@ -252,7 +257,7 @@ class FrightenDevice:
         if command['command'] == 'end experiment':
             self.stop_experiment()
 
-        self.toggle_asking(True)
+        self.toggle_asking(original_asking_status)
         printx('asking again')
 
     def read_in_residual_data(self):

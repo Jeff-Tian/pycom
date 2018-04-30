@@ -95,9 +95,10 @@ class GUI(Frame):
         self.status_bar = status
 
     def change_status(self, text=None):
-        self.status_bar.config(text=text)
-        self.status_bar.update_idletasks()
-        self.status_bar.update_idletasks()
+        # self.status_bar.config(text=text)
+        # self.status_bar.update_idletasks()
+        # self.status_bar.update_idletasks()
+        pass
 
     def make_menu_bar(self, window):
         menu_bar = Menu(window)
@@ -124,7 +125,7 @@ class GUI(Frame):
             command_responses['beep_on_off']))
         command_menu.add_command(label='灯光开关 AA 4A 4C 06 00 84 02 00 01 4C 88', command=lambda: self.issue_command(
             commands['light_on_off'],
-            command_responses['light_off_off']))
+            command_responses['light_on_off']))
         command_menu.add_command(label='加电开关 AA 4A 4C 06 00 84 02 00 01 45 88', command=lambda: self.issue_command(
             commands['electricity_on_off'],
             command_responses['electricity_on_off']))
@@ -155,26 +156,43 @@ class GUI(Frame):
         self.frighten_device.stop_experiment()
 
     def open_file(self):
+        if self.frighten_device.experiment_started:
+            messagebox.showinfo('实验正在进行', '请先结束试验！')
+            return
+
+        self.frighten_device.toggle_asking(False)
         file_path = filedialog.askopenfilename(initialdir='.', title="选择文件", filetypes=[('逗号分隔文件', '*.*')])
         self.frighten_device.plot_csv(file_path)
 
     def read_config(self):
+        if self.frighten_device.experiment_started:
+            messagebox.showinfo('实验正在进行', '请先结束试验！')
+            return
         with open('./config.yaml', 'r') as stream:
             self.config = yaml.load(stream)
 
         return self.config
 
     def save_config(self):
+        if self.frighten_device.experiment_started:
+            messagebox.showinfo('实验正在进行', '请先结束试验！')
+            return
         with io.open('./config.yaml', 'w', encoding='utf8') as outfile:
             yaml.dump(self.config, outfile, default_flow_style=False, allow_unicode=True)
 
     def issue_command(self, command, expected_response):
+        if self.frighten_device.experiment_started:
+            messagebox.showinfo('实验正在进行', '请先结束试验！')
+            return
         self.command_thread = threading.Thread(target=self.issue_command_in_another_thread,
                                                args=[command, expected_response])
         self.command_thread.daemon = True
         self.command_thread.start()
 
     def issue_command_in_another_thread(self, command, expected_response):
+        if self.frighten_device.experiment_started:
+            messagebox.showinfo('实验正在进行', '请先结束试验！')
+            return
         if self.ser.is_open:
             self.ser.write(command)
             self.get_response(expected_response)
