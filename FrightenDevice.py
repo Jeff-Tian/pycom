@@ -2,6 +2,7 @@ import threading
 
 from time import gmtime, sleep
 from time import strftime
+from tkinter import messagebox
 
 from matplotlib import dates
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -80,17 +81,21 @@ class FrightenDevice:
     def start_experiment(self):
         self.init_filename()
         self.experiment_started = True
+        self.toggle_asking(False)
         for i, value in enumerate(self.gui.config['commands']):
             self.set_command(value)
 
     def stop_experiment(self):
         self.experiment_started = False
 
-    def toggle_asking(self):
-        if self.keep_ask:
-            self.keep_ask = False
+    def toggle_asking(self, on_off=None):
+        if on_off != None:
+            self.keep_ask = on_off
         else:
-            self.keep_ask = True
+            if self.keep_ask:
+                self.keep_ask = False
+            else:
+                self.keep_ask = True
 
     def handle_gravity_data(self, data):
         gravity_data = PPI.parse_gravity_data(data)
@@ -190,4 +195,9 @@ class FrightenDevice:
     def execute_command(self, command):
         print('executing command: {}..., at {}'.format(command['command'], gmtime()))
         if command['command'] == 'login':
-            self.issue_command()
+            self.issue_command(commands['login'], command_responses['login'])
+        if command['command'] == 'end experiment':
+            self.issue_command(commands['end_experiment'], command_responses['end_experiment'])
+            self.stop_experiment()
+            messagebox.showinfo('实验结束！', '实验结束了！')
+            self.toggle_asking(True)
