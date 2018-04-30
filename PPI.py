@@ -9,5 +9,5 @@ class PPI(object):
         try:
             return struct.unpack('f', bytearray([data[9], data[10], data[11], data[12]]))[0]
         except Exception as ex:
-            print(ex)
+            printx(ex)
             pass

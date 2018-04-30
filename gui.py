@@ -10,7 +10,7 @@ import serial
 
 from DataGenerator import *
 from DataVisualizer import DataVisualizer
-from FrightenDevice import FrightenDevice, command_responses, commands
+from FrightenDevice import FrightenDevice, command_responses, commands, printx
 import sys
 import yaml
 
@@ -42,7 +42,7 @@ class GUI(Frame):
     def __init__(self, window, debug_mode=False):
 
         self.debug_mode = debug_mode
-        print('debug mode = ', self.debug_mode)
+        printx('debug mode = ', self.debug_mode)
         window.title('动物惊吓实验')
 
         self.make_status_bar(window)
@@ -135,13 +135,24 @@ class GUI(Frame):
             command_responses['flash_on']))
 
         menu_bar.add_cascade(label='命令', menu=command_menu)
-        menu_bar.add_command(label='测试数据', command=self.generate_data)
         menu_bar.add_command(label='开始实验', command=self.start_experiment)
+        menu_bar.add_command(label='结束实验', command=self.stop_experiment)
 
         window.config(menu=menu_bar)
 
     def start_experiment(self):
+        if self.frighten_device.experiment_started:
+            messagebox.showinfo('试验进行中', '请等待试验结束后再开始')
+            return
+
         self.frighten_device.start_experiment()
+
+    def stop_experiment(self):
+        if not self.frighten_device.experiment_started:
+            messagebox.showinfo('试验未开始', '试验还未开始')
+            return
+
+        self.frighten_device.stop_experiment()
 
     def open_file(self):
         file_path = filedialog.askopenfilename(initialdir='.', title="选择文件", filetypes=[('逗号分隔文件', '*.*')])
@@ -183,13 +194,13 @@ class GUI(Frame):
                                                           hex_decode(expected_response)))
 
                 self.window.event_generate('<<data_received>>', when='tail', data=hex_decode(data))
-                print('data = ', hex_decode(data))
+                printx('data = ', hex_decode(data))
                 break
             else:
                 sleep(0.1)
 
     def data_received(self, event):
-        print(event.data)
+        printx(event.data)
         self.show.delete(0.0, END)
         self.show.insert(0.0, event.data)
 
@@ -234,7 +245,7 @@ class GUI(Frame):
 
     def submit(self):
         context1 = self.input.get()
-        print('about to write ', context1.encode('utf-8'))
+        printx('about to write ', context1.encode('utf-8'))
         self.ser.write(bytearray(context1.encode('utf-8')))
 
     def open_serial(self):
@@ -250,7 +261,7 @@ class GUI(Frame):
             self.change_status('串口已被关闭！')
 
     def close_window(self):
-        print('closing window')
+        printx('closing window')
         # self.ser.close()
         # self.window.destroy()
         self.window.quit()
@@ -260,7 +271,7 @@ class GUI(Frame):
             n = self.ser.inWaiting()
             if n > 0:
                 response = self.ser.readline().decode('utf-8')
-                print('response = ', strftime('%Y-%m-%d %H:%M:%S', gmtime()), response)
+                printx('response = ', strftime('%Y-%m-%d %H:%M:%S', gmtime()), response)
                 self.append_data_to_file(response)
 
     def make_frighten_controls(self):
@@ -277,10 +288,10 @@ class GUI(Frame):
 
 def debug_mode(argv):
     try:
-        print('debug mode = ', argv.index('--debug'))
+        printx('debug mode = ', argv.index('--debug'))
         return True
     except ValueError as ex:
-        print(ex)
+        printx(ex)
         return False
 
 

@@ -33,7 +33,7 @@ class DataVisualizer:
 
     def display_data_from_port(self):
         while self.ser.isOpen():
-            print('reading...')
+            printx('reading...')
             data = self.ser.readline()
             data = data.decode('utf-8')[:-1]
             self.window.event_generate('<<data_received>>', when='tail', data=data)

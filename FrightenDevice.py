@@ -17,7 +17,13 @@ import pandas as pd
 from  PPI import *
 from helper import hex_decode
 
-__all__ = ['FrightenDevice', 'commands', 'command_responses']
+__all__ = ['FrightenDevice', 'commands', 'command_responses', 'printx']
+
+
+def printx(arg1, arg2=None, arg3=None, arg4=None, arg5=None, arg6=None):
+    print(arg1, arg2, arg3, arg4, arg5, arg6)
+    pass
+
 
 commands = {
     'login': bytearray(
@@ -39,7 +45,7 @@ command_responses = {
     'end_experiment': bytearray([0xaa, 0x4a, 0x4c, 0x05, 0x00, 0x84, 0x03, 0x00, 0x01, 0x4f]),
     'beep': bytearray([0xaa, 0x4a, 0x4c, 0x09, 0x00, 0x84, 0x03, 0x00, 0x01, 0x41, 0x34, 0x05, 0x00, 0x00]),
     'beep_on_off': bytearray([0xaa, 0x4a, 0x4c, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x42, 0x88]),
-    'light_off_off': bytearray([0xaa, 0x4a, 0x4c, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x4c, 0x88]),
+    'light_on_off': bytearray([0xaa, 0x4a, 0x4c, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x4c, 0x88]),
     'electricity_on_off': bytearray([0xaa, 0x4a, 0x4c, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x45, 0x88]),
     'gravity_data': bytearray([0xaa]),
     'flash_on': bytearray([0xaa, 0x4a, 0x4c, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x45, 0x11]),
@@ -78,7 +84,11 @@ class FrightenDevice:
         thread.start()
         self.gui.change_status('开始询问重力数据……')
 
+    def stop(self):
+        pass
+
     def start_experiment(self):
+        messagebox.showinfo('实验开始！', '实验要开始了！')
         self.init_filename()
         self.experiment_started = True
         for i, value in enumerate(self.gui.config['commands']):
@@ -86,6 +96,9 @@ class FrightenDevice:
 
     def stop_experiment(self):
         self.experiment_started = False
+        self.issue_command(commands['end_experiment'], command_responses['end_experiment'])
+        messagebox.showinfo('实验结束！', '实验结束了！')
+        printx('实验结束！')
 
     def toggle_asking(self, on_off=None):
         if on_off is not None:
@@ -96,8 +109,11 @@ class FrightenDevice:
             else:
                 self.keep_ask = True
 
+        printx('asking = ', self.keep_ask)
+
     def handle_gravity_data(self, data):
         gravity_data = PPI.parse_gravity_data(data)
+        printx('got ', gravity_data)
         self.gui.change_status('{}：{}g'.format(hex_decode(data), gravity_data))
         self.plot_gravity_data(gravity_data)
         if self.experiment_started:
@@ -106,8 +122,13 @@ class FrightenDevice:
     def ask_gravity_data(self):
         while self.ser.isOpen:
             if self.keep_ask:
-                self.issue_command(bytearray([0xAA, 0x4A, 0x4C, 0x04, 0x00, 0x86, 0x0F, 0x00, 0x01]),
-                                   self.handle_gravity_data)
+                try:
+                    self.issue_command(bytearray([0xAA, 0x4A, 0x4C, 0x04, 0x00, 0x86, 0x0F, 0x00, 0x01]),
+                                       self.handle_gravity_data)
+                except Exception as ex:
+                    printx(ex)
+                    messagebox.showinfo('catch you!', 'by me!')
+                printx('asking...')
 
     def issue_command(self, command, expected_response):
         if self.ser.isOpen:
@@ -118,12 +139,15 @@ class FrightenDevice:
                 self.get_response(expected_response)
             except TimeoutError:
                 self.gui.change_status('超时未获得回复')
+            except Exception as ex:
+                self.gui.change_status(ex)
         else:
             self.gui.change_status('不能发送命令，COM 端口没有打开！')
 
     def plot_gravity_data(self, data):
         points_per_screen = 30
 
+        printx('drawing data for ', data)
         try:
             self.index += 1
             # self.x.append(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f'))
@@ -135,8 +159,12 @@ class FrightenDevice:
             # self.chart.set_xticklabels(self.x[-points_per_screen:], rotation=17)
             self.chart.set_title(label=u'PP = {}'.format(np.average(self.y)))
             self.canvas.draw()
-        except ValueError:
+            printx('drew chart for ', data)
+        except ValueError as ex:
+            printx(ex)
             pass
+
+        printx('done drawing for ', data)
 
     def plot_csv(self, csv_file):
         data = pd.read_csv(csv_file, '\, *', engine='python')
@@ -192,23 +220,40 @@ class FrightenDevice:
         threading.Timer(command['at'], lambda: self.execute_command(command)).start()
 
     def execute_command(self, command):
-        print('executing command: {}..., at {}'.format(command['command'], gmtime()))
+        if not self.experiment_started:
+            printx('skipping command: {}... at {}'.format(command['command'].encode('utf-8').decode('utf8'), gmtime()))
+            return
+
+        printx('executing command: {}..., at {}'.format(command['command'].encode('utf8').decode('utf8'), gmtime()))
         self.toggle_asking(False)
         self.read_in_residual_data()
 
+        # TODO： 登录命令有什么用？如果返回数据不符合期望，做什么？重试吗？
         if command['command'] == 'login':
-            messagebox.showinfo('实验开始！', '实验要开始了！')
             self.issue_command(commands['login'], command_responses['login'])
+        # TODO: 对于开始试验，如果返回结果错误，是要重试吗？
+        if command['command'] == 'start experiment':
+            self.issue_command(commands['start_experiment'], command_responses['start_experiment'])
+        # TODO: 是否有专门的灯开灯关命令？还是说第一次是开，第二次同一个命令就关了？
+        if command['command'] == 'light on':
+            self.issue_command(commands['light_on_off'], command_responses['light_on_off'])
+        if command['command'] == 'light off':
+            self.issue_command(commands['light_on_off'], command_responses['light_on_off'])
+        if command['command'] == '加电':
+            self.issue_command(commands['electricity_on_off'])
+        if command['command'] == '关电':
+            self.issue_command(commands['electricity_on_off'])
+        if command['command'] == 'noise setting':
+            self.issue_command(commands['beep'], command_responses['beep'])
+        if command['command'] == 'noise on':
+            self.issue_command(commands['beep_on_off'], command_responses['beep_on_off'])
         if command['command'] == 'flash on':
             self.issue_command(commands['flash_on'], command_responses['flash_on'])
         if command['command'] == 'end experiment':
-            self.issue_command(commands['end_experiment'], command_responses['end_experiment'])
             self.stop_experiment()
-            messagebox.showinfo('实验结束！', '实验结束了！')
-            print('实验结束！')
 
         self.toggle_asking(True)
-        print('asking again')
+        printx('asking again')
 
     def read_in_residual_data(self):
         n = self.ser.inWaiting()
