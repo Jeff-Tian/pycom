@@ -81,7 +81,6 @@ class FrightenDevice:
     def start_experiment(self):
         self.init_filename()
         self.experiment_started = True
-        self.toggle_asking(False)
         for i, value in enumerate(self.gui.config['commands']):
             self.set_command(value)
 
@@ -89,7 +88,7 @@ class FrightenDevice:
         self.experiment_started = False
 
     def toggle_asking(self, on_off=None):
-        if on_off != None:
+        if on_off is not None:
             self.keep_ask = on_off
         else:
             if self.keep_ask:
@@ -194,7 +193,11 @@ class FrightenDevice:
 
     def execute_command(self, command):
         print('executing command: {}..., at {}'.format(command['command'], gmtime()))
+        self.toggle_asking(False)
+        self.read_in_residual_data()
+
         if command['command'] == 'login':
+            messagebox.showinfo('实验开始！', '实验要开始了！')
             self.issue_command(commands['login'], command_responses['login'])
         if command['command'] == 'flash on':
             self.issue_command(commands['flash_on'], command_responses['flash_on'])
@@ -202,4 +205,13 @@ class FrightenDevice:
             self.issue_command(commands['end_experiment'], command_responses['end_experiment'])
             self.stop_experiment()
             messagebox.showinfo('实验结束！', '实验结束了！')
-            self.toggle_asking(True)
+            print('实验结束！')
+
+        self.toggle_asking(True)
+        print('asking again')
+
+    def read_in_residual_data(self):
+        n = self.ser.inWaiting()
+        while n > 0:
+            sleep(0.01)
+            n = self.ser.inWaiting()
