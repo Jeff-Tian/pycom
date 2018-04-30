@@ -1,4 +1,6 @@
 commands:
+  - command: 'login'
+    at: 0
   - command: 'light on'
     at: 3
   - command: 'light off'

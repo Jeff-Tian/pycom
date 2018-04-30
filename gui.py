@@ -10,7 +10,7 @@ import serial
 
 from DataGenerator import *
 from DataVisualizer import DataVisualizer
-from FrightenDevice import FrightenDevice
+from FrightenDevice import FrightenDevice, command_responses, commands
 import sys
 import yaml
 
@@ -112,37 +112,27 @@ class GUI(Frame):
 
         command_menu = Menu(menu_bar, tearoff=0)
         command_menu.add_command(label='登录 AA 4A 4C 0C 00 81 02 00 01 11 11 22 22 02 04 01 01',
-                                 command=lambda: self.issue_command(bytearray(
-                                     [0xAA, 0x4A, 0x4C, 0x0C, 0x00, 0x81, 0x02, 0x00, 0x01, 0x11, 0x11, 0x22, 0x22,
-                                      0x02, 0x04, 0x01, 0x01]), bytearray(
-                                     [0xaa, 0x4a, 0x4c, 0x0c, 0x00, 0x82, 0x03, 0x00, 0x01, 0x33, 0x33, 0x44, 0x44,
-                                      0x02, 0x04, 0x01, 0x01])))
+                                 command=lambda: self.issue_command(commands['login'], command_responses['login']))
         command_menu.add_command(label='开始试验 AA 4A 4C 05 00 84 02 00 01 47', command=lambda: self.issue_command(
-            bytearray([0xAA, 0x4A, 0x4C, 0x05, 0x00, 0x84, 0x02, 0x00, 0x01, 0x47]),
-            bytearray([0xaa, 0x4a, 0x4c, 0x05, 0x00, 0x84, 0x03, 0x00, 0x01, 0x47])))
+            commands['start_experiment'], command_responses['start_experiment']))
         command_menu.add_command(label='结束试验 AA 4A 4C 05 00 84 02 00 01 4F', command=lambda: self.issue_command(
-            bytearray([0xAA, 0x4A, 0x4C, 0x05, 0x00, 0x84, 0x02, 0x00, 0x01, 0x4F]),
-            bytearray([0xaa, 0x4a, 0x4c, 0x05, 0x00, 0x84, 0x03, 0x00, 0x01, 0x4f])))
+            commands['end_experiment'], command_responses['end_experiment']))
         command_menu.add_command(label='蜂鸣器频率设置 AA 4A 4C 09 00 84 02 00 01 41 34 05 00 00',
-                                 command=lambda: self.issue_command(bytearray(
-                                     [0xAA, 0x4A, 0x4C, 0x09, 0x00, 0x84, 0x02, 0x00, 0x01, 0x41, 0x34, 0x05, 0x00,
-                                      0x00]), bytearray(
-                                     [0xaa, 0x4a, 0x4c, 0x09, 0x00, 0x84, 0x03, 0x00, 0x01, 0x41, 0x34, 0x05, 0x00,
-                                      0x00])))
+                                 command=lambda: self.issue_command(commands['beep'], command_responses['beep']))
         command_menu.add_command(label='蜂鸣器开关 AA 4A 4C 06 00 84 02 00 01 42 88', command=lambda: self.issue_command(
-            bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x42, 0x88]),
-            bytearray([0xaa, 0x4a, 0x4c, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x42, 0x88])))
+            commands['beep_on_off'],
+            command_responses['beep_on_off']))
         command_menu.add_command(label='灯光开关 AA 4A 4C 06 00 84 02 00 01 4C 88', command=lambda: self.issue_command(
-            bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x4C, 0x88]),
-            bytearray([0xaa, 0x4a, 0x4c, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x4c, 0x88])))
+            commands['light_on_off'],
+            command_responses['light_off_off']))
         command_menu.add_command(label='加电开关 AA 4A 4C 06 00 84 02 00 01 45 88', command=lambda: self.issue_command(
-            bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45, 0x88]),
-            bytearray([0xaa, 0x4a, 0x4c, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x45, 0x88])))
+            commands['electricity_on_off'],
+            command_responses['electricity_on_off']))
         command_menu.add_command(label='重力数据返回 AA 4A 4C 04 00 86 0F 00 01', command=lambda: self.issue_command(
-            bytearray([0xAA, 0x4A, 0x4C, 0x04, 0x00, 0x86, 0x0F, 0x00, 0x01]), bytearray([0xaa])))
+            commands['gravity_data'], command_responses['gravity_data']))
         command_menu.add_command(label='亮灯 AA 4A 4C 06 00 84 02 00 01 45 11', command=lambda: self.issue_command(
-            bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45, 0x11]),
-            bytearray([0xaa, 0x4a, 0x4c, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x45, 0x11])))
+            commands['flash_on'],
+            command_responses['flash_on']))
 
         menu_bar.add_cascade(label='命令', menu=command_menu)
         menu_bar.add_command(label='测试数据', command=self.generate_data)
