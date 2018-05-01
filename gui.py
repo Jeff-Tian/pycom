@@ -54,7 +54,6 @@ class GUI(Frame):
 
         # 串口设置相关变量
         self.port = "0"
-        self.baudrate = 9600
         # 串口号提示
         self.lab1 = Label(frame, text='序列号')
         self.lab1.grid(row=0, column=0, sticky=W)
@@ -62,26 +61,26 @@ class GUI(Frame):
         self.init_serial()
         self.make_com_list(frame)
         # 输出框提示
-        self.lab3 = Label(frame, text='收到的信息')
-        self.lab3.grid(row=0, column=1, sticky=W)
+        # self.lab3 = Label(frame, text='收到的信息')
+        # self.lab3.grid(row=0, column=1, sticky=W)
         # 输出框
-        self.show = Text(frame, width=40, height=5, wrap=WORD)
-        self.show.grid(row=1, column=1, rowspan=4, sticky=W)
+        # self.show = Text(frame, width=40, height=5, wrap=WORD)
+        # self.show.grid(row=1, column=1, rowspan=4, sticky=W)
         # 输入框提示
-        self.lab4 = Label(frame, text='要发送的信息')
-        self.lab4.grid(row=5, column=1, sticky=W)
+        # self.lab4 = Label(frame, text='要发送的信息')
+        # self.lab4.grid(row=5, column=1, sticky=W)
         # 输入框
-        self.input = Entry(frame, width=40)
-        self.input.grid(row=6, column=1, rowspan=4, sticky=W)
+        # self.input = Entry(frame, width=40)
+        # self.input.grid(row=6, column=1, rowspan=4, sticky=W)
         # 输入按钮
-        self.button1 = Button(frame, text="发送", command=self.submit)
-        self.button1.grid(row=11, column=1, sticky=E)
+        # self.button1 = Button(frame, text="发送", command=self.submit)
+        # self.button1.grid(row=11, column=1, sticky=E)
         # 串口开启按钮
-        self.button2 = Button(frame, text='打开串口', command=self.open_serial)
-        self.button2.grid(row=7, column=0, sticky=W)
+        self.open_serial_button = Button(frame, text='打开串口', command=self.open_serial)
+        self.open_serial_button.grid(row=0, column=3, sticky=W)
         # 串口关闭按钮
-        self.button3 = Button(frame, text='关闭串口', command=self.close_serial)
-        self.button3.grid(row=10, column=0, sticky=W)
+        self.close_serial_button = Button(frame, text='关闭串口', command=self.close_serial)
+        self.close_serial_button.grid(row=0, column=4, sticky=W)
 
         window.protocol('WM_DELETE_WINDOW', self.close_window)
 
@@ -219,8 +218,8 @@ class GUI(Frame):
 
     def data_received(self, event):
         printx(event.data)
-        self.show.delete(0.0, END)
-        self.show.insert(0.0, event.data)
+        # self.show.delete(0.0, END)
+        # self.show.insert(0.0, event.data)
 
     def generate_data(self):
         thread_data = threading.Thread(target=DataGenerator.randomize, args=[self, self.ser])
@@ -241,7 +240,7 @@ class GUI(Frame):
         if len(self.ports_list['value']) > 0:
             self.ports_list.current(0)
             self.ports_list.bind('<<ComboboxSelected>>', self.select_port)
-            self.ports_list.grid(row=1, column=0, sticky=W)
+            self.ports_list.grid(row=0, column=1, sticky=W)
             self.select_port(None)
 
             if len(self.ports_list['value']) == 1:
@@ -293,6 +292,8 @@ class GUI(Frame):
                 self.append_data_to_file(response)
 
     def make_frighten_controls(self):
+        pass
+        return
         chk = ttk.Checkbutton(self.window, text='持续询问重力数据', command=self.frighten_device.toggle_asking)
         # chk.grid(column=1, row=10, sticky=W)
         chk.pack(pady=0, side=LEFT)

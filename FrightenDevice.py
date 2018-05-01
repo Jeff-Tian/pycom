@@ -62,7 +62,7 @@ class FrightenDevice:
         self.y = []
         self.first_write = True
 
-        self.fig = Figure(figsize=(self.window.winfo_screenwidth(), 3))
+        self.fig = Figure(figsize=(self.window.winfo_screenwidth(), 6))
         self.chart = self.fig.add_subplot(111)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.window)
         self.canvas.get_tk_widget().pack()
@@ -122,12 +122,8 @@ class FrightenDevice:
     def ask_gravity_data(self):
         while self.ser.isOpen:
             if self.keep_ask:
-                try:
-                    self.issue_command(bytearray([0xAA, 0x4A, 0x4C, 0x04, 0x00, 0x86, 0x0F, 0x00, 0x01]),
-                                       self.handle_gravity_data)
-                except Exception as ex:
-                    printx(ex)
-                    messagebox.showinfo('catch you!', 'by me!')
+                self.issue_command(bytearray([0xAA, 0x4A, 0x4C, 0x04, 0x00, 0x86, 0x0F, 0x00, 0x01]),
+                                   self.handle_gravity_data)
                 printx('asking...')
 
     def issue_command(self, command, expected_response):
@@ -167,17 +163,25 @@ class FrightenDevice:
         printx('done drawing for ', data)
 
     def plot_csv(self, csv_file):
+        self.gui.change_status('正在读取文件……')
         data = pd.read_csv(csv_file, '\, *', engine='python')
-        self.x = data.timestamp
-        self.y = data.data
+        self.gui.change_status('读取文件完毕，正在画图……')
+        # self.x = data.timestamp
+        try:
+            self.x = [i for i in range(len(data.data))]
+            self.y = data.data
 
-        self.chart.cla()
-        self.chart.clear()
+            self.chart.cla()
+            self.chart.clear()
 
-        self.chart.plot(self.x, self.y, 'bo--')
-        self.chart.set_xticklabels(self.x, rotation=17)
-        self.chart.set_title(label=u'PP = {}'.format(np.average(self.y)))
-        self.canvas.draw()
+            self.chart.plot(self.x, self.y, 'bo--')
+            # self.chart.set_xticklabels(self.x, rotation=17)
+            self.chart.set_title(label=u'PP = {}'.format(np.average(self.y)))
+            self.canvas.draw()
+        except Exception as ex:
+            print(ex)
+            messagebox.showinfo('画图失败！', '可能是文件格式不对，或者没有数据。')
+        self.gui.change_status('画图完毕.')
 
     def append_data_to_file(self, data=None):
         if self.first_write:
