@@ -52,6 +52,8 @@ class GUI(Frame):
         frame = Frame(window)
         frame.pack()
 
+        self.frame = frame
+
         # 串口设置相关变量
         self.port = "0"
         # 串口号提示
@@ -81,6 +83,8 @@ class GUI(Frame):
         # 串口关闭按钮
         self.close_serial_button = Button(frame, text='关闭串口', command=self.close_serial)
         self.close_serial_button.grid(row=0, column=4, sticky=W)
+
+        self.make_report()
 
         window.protocol('WM_DELETE_WINDOW', self.close_window)
 
@@ -261,7 +265,7 @@ class GUI(Frame):
         self.port = self.selected_port.get()
 
     def submit(self):
-        context1 = self.input.get()
+        context1 = self.start_at_input.get()
         printx('about to write ', context1.encode('utf-8'))
         self.ser.write(bytearray(context1.encode('utf-8')))
 
@@ -303,6 +307,31 @@ class GUI(Frame):
             chk.state(['selected'])
         else:
             chk.state(['!selected'])
+
+    def make_report(self):
+        frame = self.frame
+
+        self.label_start_at = Label(frame, text='开始时间（毫秒）')
+        self.label_start_at.grid(row=1, column=0, sticky=W)
+        self.start_at_input = Entry(frame, width=20)
+        self.start_at_input.grid(row=1, column=1, sticky=W)
+
+        self.label_end_at = Label(frame, text='结束时间（毫秒）')
+        self.label_end_at.grid(row=1, column=2, sticky=W)
+        self.end_at_input = Entry(frame, width=20)
+        self.end_at_input.grid(row=1, column=3, sticky=W)
+
+        self.ppi_button = Button(frame, text="计算 PPI", command=self.report)
+        self.ppi_button.grid(row=1, column=4, sticky=E)
+
+        self.text_report = Entry(frame, width=20)
+        self.text_report.grid(row=1, column=5, sticky=E)
+
+    def report(self):
+        (start_at, p, pp, ppi, data) = self.frighten_device.report(int(self.start_at_input.get()),
+                                                                   int(self.end_at_input.get()))
+        self.text_report.delete(0, END)
+        self.text_report.insert(0, '{0:.4f}%'.format(ppi * 100))
 
 
 def debug_mode(argv):
