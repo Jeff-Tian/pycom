@@ -10,7 +10,6 @@ from matplotlib.figure import Figure
 import datetime
 import matplotlib.pyplot as plt
 import numpy as np
-from datetime import datetime
 
 import pandas as pd
 
@@ -18,6 +17,8 @@ from  PPI import *
 from helper import hex_decode
 
 __all__ = ['FrightenDevice', 'commands', 'command_responses', 'printx']
+
+date_time_format = '%Y-%m-%d %H:%M:%S.%f'
 
 
 def printx(arg1, arg2=None, arg3=None, arg4=None, arg5=None, arg6=None):
@@ -52,20 +53,26 @@ command_responses = {
 }
 
 
+def mask(df, f):
+    return df[f(df)]
+
+
 class FrightenDevice:
     def __init__(self, gui):
         self.gui = gui
-        self.window = gui.window
-        self.ser = gui.ser
+        if gui != None:
+            self.window = gui.window
+            self.ser = gui.ser
         self.index = 0
         self.x = []
         self.y = []
         self.first_write = True
 
-        self.fig = Figure(figsize=(self.window.winfo_screenwidth(), 6))
-        self.chart = self.fig.add_subplot(111)
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.window)
-        self.canvas.get_tk_widget().pack()
+        if gui != None:
+            self.fig = Figure(figsize=(self.window.winfo_screenwidth(), 6))
+            self.chart = self.fig.add_subplot(111)
+            self.canvas = FigureCanvasTkAgg(self.fig, master=self.window)
+            self.canvas.get_tk_widget().pack()
 
         self.keep_ask = True
 
@@ -165,6 +172,7 @@ class FrightenDevice:
     def plot_csv(self, csv_file):
         self.gui.change_status('正在读取文件……')
         data = pd.read_csv(csv_file, '\, *', engine='python')
+        self.current_pd = data
         self.gui.change_status('读取文件完毕，正在画图……')
         # self.x = data.timestamp
         try:
@@ -269,3 +277,20 @@ class FrightenDevice:
         while n > 0:
             sleep(0.01)
             n = self.ser.inWaiting()
+
+    def report(self, start_time_in_ms, end_time_in_ms):
+        experiment_start_at = self.current_pd.timestamp[0]
+        start_at = datetime.datetime.strptime(experiment_start_at, date_time_format)
+        filter_start = start_at + datetime.timedelta(microseconds=start_time_in_ms * 1000)
+        filter_end = start_at + datetime.timedelta(microseconds=end_time_in_ms * 1000)
+
+        filter_start = datetime.datetime.strftime(filter_start, date_time_format)
+        filter_end = datetime.datetime.strftime(filter_end, date_time_format)
+
+        filtered_data = self.current_pd[
+            (self.current_pd.timestamp >= filter_start) & (self.current_pd.timestamp < filter_end)]
+
+        p = np.average(filtered_data.data)
+        pp = np.average(self.current_pd.data)
+        ppi = (p - pp) / p
+        return experiment_start_at, p, pp, ppi, filtered_data
