@@ -296,8 +296,6 @@ class GUI(Frame):
                 self.append_data_to_file(response)
 
     def make_frighten_controls(self):
-        pass
-        return
         chk = ttk.Checkbutton(self.window, text='持续询问重力数据', command=self.frighten_device.toggle_asking)
         # chk.grid(column=1, row=10, sticky=W)
         chk.pack(pady=0, side=LEFT)
