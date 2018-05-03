@@ -1,3 +1,4 @@
+pool_interval: 0.01
 commands:
   - command: 'login'
     at: 0

@@ -229,8 +229,8 @@ class FrightenDevice:
                 if waited >= timeout:
                     raise TimeoutError
 
-                sleep(0.1)
-                waited += 0.1
+                sleep(self.gui.config['pool_interval'])
+                waited += self.gui.config['pool_interval']
 
     def set_command(self, command):
         threading.Timer(command['at'], lambda: self.execute_command(command)).start()
