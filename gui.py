@@ -98,10 +98,9 @@ class GUI(Frame):
         self.status_bar = status
 
     def change_status(self, text=None):
-        # self.status_bar.config(text=text)
-        # self.status_bar.update_idletasks()
-        # self.status_bar.update_idletasks()
-        pass
+        self.status_bar.config(text=text)
+        self.status_bar.update_idletasks()
+        self.status_bar.update_idletasks()
 
     def make_menu_bar(self, window):
         menu_bar = Menu(window)
@@ -188,7 +187,10 @@ class GUI(Frame):
             messagebox.showinfo('实验正在进行', '请先结束试验！')
             return
 
+        self.frighten_device.toggle_asking(False)
+        self.frighten_device.read_in_residual_data()
         self.frighten_device.issue_command(command, expected_response)
+        self.frighten_device.restore_asking()
 
     def data_received(self, event):
         printx(event.data)

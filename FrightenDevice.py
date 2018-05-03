@@ -108,7 +108,12 @@ class FrightenDevice:
         messagebox.showinfo('实验结束！', '实验结束了！')
         printx('实验结束！')
 
+    def restore_asking(self):
+        if self.last_asking_status is not None:
+            self.keep_ask = self.last_asking_status
+
     def toggle_asking(self, on_off=None):
+        self.last_asking_status = self.keep_ask
         if on_off is not None:
             self.keep_ask = on_off
         else:
@@ -121,7 +126,7 @@ class FrightenDevice:
 
     def handle_gravity_data(self, data):
         gravity_data = PPI.parse_gravity_data(data)
-        self.gui.change_status('{}：{}g'.format(hex_decode(data), gravity_data))
+        # self.gui.change_status('{}：{}g'.format(hex_decode(data), gravity_data))
         self.plot_gravity_data(gravity_data)
         if self.experiment_started:
             self.append_data_to_file(gravity_data)
@@ -209,7 +214,7 @@ class FrightenDevice:
 
         while True:
             n = self.ser.inWaiting()
-            self.gui.change_status('等待命令 {} 的回复……'.format(hex_decode(self.last_command)))
+            # self.gui.change_status('等待命令 {} 的回复……'.format(hex_decode(self.last_command)))
             if n > 0:
                 data = self.ser.read(n)
 
@@ -241,7 +246,6 @@ class FrightenDevice:
             return
 
         printx('executing command: {}..., at {}'.format(command['command'].encode('utf8').decode('utf8'), gmtime()))
-        original_asking_status = self.keep_ask
         self.toggle_asking(False)
         self.read_in_residual_data()
 
@@ -269,13 +273,14 @@ class FrightenDevice:
         if command['command'] == 'end experiment':
             self.stop_experiment()
 
-        self.toggle_asking(original_asking_status)
+        self.restore_asking()
         printx('asking again')
 
     def read_in_residual_data(self):
         n = self.ser.inWaiting()
         while n > 0:
-            sleep(0.01)
+            self.ser.read(n)
+            sleep(self.gui.config['pool_interval'])
             n = self.ser.inWaiting()
 
     def report(self, start_time_in_ms, end_time_in_ms):
