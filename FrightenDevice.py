@@ -121,7 +121,6 @@ class FrightenDevice:
 
     def handle_gravity_data(self, data):
         gravity_data = PPI.parse_gravity_data(data)
-        printx('got ', gravity_data)
         self.gui.change_status('{}：{}g'.format(hex_decode(data), gravity_data))
         self.plot_gravity_data(gravity_data)
         if self.experiment_started:
@@ -132,7 +131,6 @@ class FrightenDevice:
             if self.keep_ask:
                 self.issue_command(bytearray([0xAA, 0x4A, 0x4C, 0x04, 0x00, 0x86, 0x0F, 0x00, 0x01]),
                                    self.handle_gravity_data)
-                printx('asking...')
 
     def issue_command(self, command, expected_response):
         if self.ser.isOpen:
@@ -178,6 +176,7 @@ class FrightenDevice:
         # self.x = data.timestamp
         try:
             self.x = [i for i in range(len(data.data))]
+            print('self.x = ', self.x)
             self.y = data.data
 
             self.chart.cla()
