@@ -187,48 +187,13 @@ class GUI(Frame):
         if self.frighten_device.experiment_started:
             messagebox.showinfo('实验正在进行', '请先结束试验！')
             return
-        self.command_thread = threading.Thread(target=self.issue_command_in_another_thread,
-                                               args=[command, expected_response])
-        self.command_thread.daemon = True
-        self.command_thread.start()
 
-    def issue_command_in_another_thread(self, command, expected_response):
-        if self.frighten_device.experiment_started:
-            messagebox.showinfo('实验正在进行', '请先结束试验！')
-            return
-        if self.ser.is_open:
-            self.ser.write(command)
-            self.get_response(expected_response)
-        else:
-            messagebox.showinfo('不能发送命令', 'COM 端口没有打开！')
-
-    def get_response(self, expected_response):
-        while True:
-            n = self.ser.inWaiting()
-            if n > 0:
-                data = self.ser.read(n)
-                if data == expected_response:
-                    messagebox.showinfo('成功', '命令执行成功。')
-                else:
-                    messagebox.showinfo('失败',
-                                        '{}{}{}{}'.format('命令返回：', hex_decode(data), ' 期待：',
-                                                          hex_decode(expected_response)))
-
-                self.window.event_generate('<<data_received>>', when='tail', data=hex_decode(data))
-                printx('data = ', hex_decode(data))
-                break
-            else:
-                sleep(0.1)
+        self.frighten_device.issue_command(command, expected_response)
 
     def data_received(self, event):
         printx(event.data)
         # self.show.delete(0.0, END)
         # self.show.insert(0.0, event.data)
-
-    def generate_data(self):
-        thread_data = threading.Thread(target=DataGenerator.randomize, args=[self, self.ser])
-        thread_data.daemon = True
-        thread_data.start()
 
     def init_serial(self):
         # 串口初始化配置
