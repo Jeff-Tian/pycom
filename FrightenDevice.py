@@ -295,7 +295,4 @@ class FrightenDevice:
         filtered_data = self.current_pd[
             (self.current_pd.timestamp >= filter_start) & (self.current_pd.timestamp < filter_end)]
 
-        p = np.average(filtered_data.data)
-        pp = np.average(self.current_pd.data)
-        ppi = (p - pp) / p
-        return experiment_start_at, p, pp, ppi, filtered_data
+        return (experiment_start_at,) + PPI.get_ppi(self.current_pd.data, filtered_data.data) + (filtered_data,)

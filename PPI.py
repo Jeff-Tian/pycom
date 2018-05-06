@@ -2,6 +2,7 @@ import struct
 import traceback
 
 from helper import hex_decode
+import numpy as np
 
 __all__ = ['PPI']
 
@@ -15,3 +16,18 @@ class PPI(object):
         except:
             print(traceback.format_exc())
             return 0
+
+    @staticmethod
+    def get_amplitudes(data):
+        data1 = data[0:-1]
+        data2 = data[1:]
+
+        return np.absolute(np.subtract(data1, data2))
+
+    @staticmethod
+    def get_ppi(full_data, filtered_data):
+        p = np.average(PPI.get_amplitudes(filtered_data))
+        pp = np.average(PPI.get_amplitudes(full_data))
+        ppi = (p - pp) / p
+
+        return p, pp, ppi
