@@ -10,12 +10,25 @@ __all__ = ['PPI']
 class PPI(object):
     @staticmethod
     def parse_gravity_data(data):
+        print('========================= data ==============================')
+        print(hex_decode(data))
         try:
-            return (struct.unpack('L', bytearray([data[9], data[10], data[11], data[12]]))[0] * 2500 / (
-                16777216 * 0.003833))
+            ret = []
+            for index in range(30):
+                item = [data[9 + index * 4], data[10 + index * 4], data[11 + index * 4], data[12 + index * 4]]
+
+                print(hex_decode(item))
+                ret.append(PPI.parse_one_gravity_data(item))
+
+            return ret
         except:
             print(traceback.format_exc())
             return 0
+
+    @staticmethod
+    def parse_one_gravity_data(data):
+        return struct.unpack('L', bytearray(data))[0] * 2500 / (
+            16777216 * 0.003833)
 
     @staticmethod
     def get_amplitudes(data):

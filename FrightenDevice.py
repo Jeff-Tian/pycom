@@ -134,14 +134,16 @@ class FrightenDevice:
     def ask_gravity_data(self):
         while self.ser.isOpen:
             if self.keep_ask:
-                self.issue_command(bytearray([0xAA, 0x4A, 0x4C, 0x04, 0x00, 0x86, 0x0F, 0x00, 0x01]),
+                self.issue_command(commands['gravity_data'],
                                    self.handle_gravity_data)
+                sleep(1)
 
     def issue_command(self, command, expected_response):
         if self.ser.isOpen:
             self.gui.change_status('发送命令：{}'.format(hex_decode(command)))
             self.last_command = command
             self.ser.write(command)
+            sleep(0.5)
             try:
                 self.get_response(expected_response)
             except TimeoutError:
@@ -156,10 +158,12 @@ class FrightenDevice:
 
         printx('drawing data for ', data)
         try:
-            self.index += 1
+            self.index += 1 * 30
             # self.x.append(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f'))
-            self.x.append(self.index)
-            self.y.append(data)
+            # self.x.append(self.index)
+            # self.y.append(data)
+            self.x = self.x + [i + self.index for i in range(30)]
+            self.y = self.y + data
 
             self.chart.cla()
             self.chart.plot(self.x[-points_per_screen:], self.y[-points_per_screen:], 'bo--')
@@ -202,8 +206,10 @@ class FrightenDevice:
             self.first_write = False
 
         with open(self.file_name, 'a') as data_file:
-            data_file.writelines(
-                ['{},{}'.format(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f'), data), '\n'])
+            if data is not None:
+                for i in range(len(data)):
+                    data_file.writelines(
+                        ['{},{}'.format(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f'), data[i]), '\n'])
 
     def write_file(self):
         with open(self.file_name, 'w') as data_file:
