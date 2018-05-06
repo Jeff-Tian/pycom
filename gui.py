@@ -8,8 +8,6 @@ from time import strftime
 
 import serial
 
-from DataGenerator import *
-from DataVisualizer import DataVisualizer
 from FrightenDevice import FrightenDevice, command_responses, commands, printx
 import sys
 import yaml
@@ -114,28 +112,35 @@ class GUI(Frame):
         menu_bar.add_cascade(label='文件', menu=file_menu)
 
         command_menu = Menu(menu_bar, tearoff=0)
-        command_menu.add_command(label='登录 AA 4A 4C 0C 00 81 02 00 01 11 11 22 22 02 04 01 01',
+        command_menu.add_command(label='登录 ' + ' '.join(hex_decode(commands['login'])),
                                  command=lambda: self.issue_command(commands['login'], command_responses['login']))
-        command_menu.add_command(label='开始试验 AA 4A 4C 05 00 84 02 00 01 47', command=lambda: self.issue_command(
-            commands['start_experiment'], command_responses['start_experiment']))
-        command_menu.add_command(label='结束试验 AA 4A 4C 05 00 84 02 00 01 4F', command=lambda: self.issue_command(
-            commands['end_experiment'], command_responses['end_experiment']))
-        command_menu.add_command(label='蜂鸣器频率设置 AA 4A 4C 09 00 84 02 00 01 41 34 05 00 00',
+        command_menu.add_command(label='开始试验 ' + ' '.join(hex_decode(commands['start_experiment'])),
+                                 command=lambda: self.issue_command(
+                                     commands['start_experiment'], command_responses['start_experiment']))
+        command_menu.add_command(label='结束试验 ' + ' '.join(hex_decode(commands['end_experiment'])),
+                                 command=lambda: self.issue_command(
+                                     commands['end_experiment'], command_responses['end_experiment']))
+        command_menu.add_command(label='蜂鸣器频率设置 ' + ' '.join(hex_decode(commands['beep'])),
                                  command=lambda: self.issue_command(commands['beep'], command_responses['beep']))
-        command_menu.add_command(label='蜂鸣器开关 AA 4A 4C 06 00 84 02 00 01 42 88', command=lambda: self.issue_command(
-            commands['beep_on_off'],
-            command_responses['beep_on_off']))
-        command_menu.add_command(label='灯光开关 AA 4A 4C 06 00 84 02 00 01 4C 88', command=lambda: self.issue_command(
-            commands['light_on_off'],
-            command_responses['light_on_off']))
-        command_menu.add_command(label='加电开关 AA 4A 4C 06 00 84 02 00 01 45 88', command=lambda: self.issue_command(
-            commands['electricity_on_off'],
-            command_responses['electricity_on_off']))
-        command_menu.add_command(label='重力数据返回 AA 4A 4C 04 00 86 0F 00 01', command=lambda: self.issue_command(
-            commands['gravity_data'], command_responses['gravity_data']))
-        command_menu.add_command(label='亮灯 AA 4A 4C 06 00 84 02 00 01 45 11', command=lambda: self.issue_command(
-            commands['flash_on'],
-            command_responses['flash_on']))
+        command_menu.add_command(label='蜂鸣器开关 ' + ' '.join(hex_decode(commands['beep_on_off'])),
+                                 command=lambda: self.issue_command(
+                                     commands['beep_on_off'],
+                                     command_responses['beep_on_off']))
+        command_menu.add_command(label='灯光开关 ' + ' '.join(hex_decode(commands['light_on_off'])),
+                                 command=lambda: self.issue_command(
+                                     commands['light_on_off'],
+                                     command_responses['light_on_off']))
+        command_menu.add_command(label='加电开关 ' + ' '.join(hex_decode(commands['electricity_on_off'])),
+                                 command=lambda: self.issue_command(
+                                     commands['electricity_on_off'],
+                                     command_responses['electricity_on_off']))
+        command_menu.add_command(label='重力数据返回 ' + ' '.join(hex_decode(commands['gravity_data'])),
+                                 command=lambda: self.issue_command(
+                                     commands['gravity_data'], command_responses['gravity_data']))
+        command_menu.add_command(label='亮灯 ' + ' '.join(hex_decode(commands['flash_on_'])),
+                                 command=lambda: self.issue_command(
+                                     commands['flash_on_'],
+                                     command_responses['flash_on_']))
 
         menu_bar.add_cascade(label='命令', menu=command_menu)
         menu_bar.add_command(label='开始实验', command=self.start_experiment)

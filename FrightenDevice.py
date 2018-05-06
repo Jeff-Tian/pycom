@@ -4,11 +4,9 @@ from time import gmtime, sleep
 from time import strftime
 from tkinter import messagebox
 
-from matplotlib import dates
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import datetime
-import matplotlib.pyplot as plt
 import numpy as np
 
 import pandas as pd
@@ -37,6 +35,7 @@ commands = {
     'electricity_on_off': bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45, 0x88]),
     'gravity_data': bytearray([0xAA, 0x4A, 0x4C, 0x04, 0x00, 0x86, 0x0F, 0x00, 0x01]),
     'flash_on': bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45, 0x11]),
+    'flash_on_': bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x4C, 0x11]),
 }
 
 command_responses = {
@@ -51,6 +50,7 @@ command_responses = {
     'electricity_on_off': bytearray([0xaa, 0x4a, 0x4c, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x45, 0x88]),
     'gravity_data': bytearray([0xaa]),
     'flash_on': bytearray([0xaa, 0x4a, 0x4c, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x45, 0x11]),
+    'flash_on_': bytearray([0xaa, 0x4a, 0x4c, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x4C, 0x11]),
 }
 
 
@@ -75,7 +75,7 @@ class FrightenDevice:
             self.canvas = FigureCanvasTkAgg(self.fig, master=self.window)
             self.canvas.get_tk_widget().pack()
 
-        self.keep_ask = True
+        self.keep_ask = False
 
         self.experiment_started = False
 
@@ -99,11 +99,14 @@ class FrightenDevice:
         messagebox.showinfo('实验开始！', '实验要开始了！')
         self.init_filename()
         self.experiment_started = True
+        self.toggle_asking(True)
         for i, value in enumerate(self.gui.config['commands']):
             self.set_command(value)
 
     def stop_experiment(self):
         self.experiment_started = False
+        self.toggle_asking(False)
+        self.read_in_residual_data()
         self.issue_command(commands['end_experiment'], command_responses['end_experiment'])
         messagebox.showinfo('实验结束！', '实验结束了！')
         printx('实验结束！')
@@ -142,8 +145,11 @@ class FrightenDevice:
         if self.ser.isOpen:
             self.gui.change_status('发送命令：{}'.format(hex_decode(command)))
             self.last_command = command
-            self.ser.write(command)
-            sleep(0.5)
+            try:
+                self.ser.write(command)
+            except Exception as ex:
+                print(ex)
+                self.gui.change_status('串口通信写入失败！')
             try:
                 self.get_response(expected_response)
             except TimeoutError:
@@ -159,9 +165,6 @@ class FrightenDevice:
         printx('drawing data for ', data)
         try:
             self.index += 1 * 30
-            # self.x.append(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f'))
-            # self.x.append(self.index)
-            # self.y.append(data)
             self.x = self.x + [i + self.index for i in range(30)]
             self.y = self.y + data
 
@@ -207,9 +210,16 @@ class FrightenDevice:
 
         with open(self.file_name, 'a') as data_file:
             if data is not None:
-                for i in range(len(data)):
-                    data_file.writelines(
-                        ['{},{}'.format(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f'), data[i]), '\n'])
+                need_to_write = []
+                start = datetime.datetime.utcnow()
+                stop = len(data)
+                for i in range(stop):
+                    start += datetime.timedelta(seconds=1 / stop)
+                    need_to_write.append(
+                        '{},{}'.format(start.strftime('%Y-%m-%d %H:%M:%S.%f'), data[i]))
+                    need_to_write.append('\n')
+
+                data_file.writelines(need_to_write)
 
     def write_file(self):
         with open(self.file_name, 'w') as data_file:
@@ -220,7 +230,7 @@ class FrightenDevice:
 
         while True:
             n = self.ser.inWaiting()
-            # self.gui.change_status('等待命令 {} 的回复……'.format(hex_decode(self.last_command)))
+            self.gui.change_status('等待命令 {} 的回复……'.format(hex_decode(self.last_command)))
             if n > 0:
                 data = self.ser.read(n)
 
