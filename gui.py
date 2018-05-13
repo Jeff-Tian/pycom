@@ -1,15 +1,12 @@
 # encoding=utf-8
-import threading
 from tkinter import filedialog
 
-import matplotlib.pyplot as plt
-from time import gmtime, sleep
+from time import gmtime
 from time import strftime
 
 import serial
 
 from FrightenDevice import FrightenDevice, command_responses, commands, printx
-import sys
 import yaml
 
 from helper import hex_decode

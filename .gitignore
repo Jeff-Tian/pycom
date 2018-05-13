@@ -103,4 +103,6 @@ ENV/
 .idea
 
 *.csv
+*.yaml
+!config.yaml
 *.html
