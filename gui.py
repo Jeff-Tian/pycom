@@ -83,6 +83,7 @@ class GUI(Frame):
 
         bind_event_data(window, '<<data_received>>', self.data_received)
 
+        self.stimulate_lines = None
         self.read_config()
 
     def make_status_bar(self, window):
@@ -282,25 +283,40 @@ class GUI(Frame):
             chk.state(['!selected'])
 
     def make_report(self):
-        self.stimulate_lines = {}
-        self.make_stimulate()
+        if self.stimulate_lines is not None:
+            for key, value in self.stimulate_lines.items():
+                self.stimulate_lines[key]['label_start_at'].destroy()
+                self.stimulate_lines[key]['start_at_input'].destroy()
+                self.stimulate_lines[key]['label_end_at'].destroy()
+                self.stimulate_lines[key]['end_at_input'].destroy()
+                self.stimulate_lines[key]['ppi_button'].destroy()
+                self.stimulate_lines[key]['text_report'].destroy()
 
-    def make_stimulate(self, index=0):
+        self.stimulate_lines = {}
+        for i in range(0, len(self.config['commands'])):
+            self.make_stimulate(self.config['commands'][i], i)
+
+    def make_stimulate(self, command, index=0):
         frame = self.frame
         self.stimulate_lines[index] = {}
 
         self.stimulate_lines[index]['label_start_at'] = Label(frame, text='开始时间（毫秒）')
-        self.stimulate_lines[index]['label_start_at'].grid(row=1, column=0, sticky=W)
-        self.stimulate_lines[index]['start_at_input'] = Entry(frame, width=20)
-        self.stimulate_lines[index]['start_at_input'].grid(row=1, column=1, sticky=W)
+        self.stimulate_lines[index]['label_start_at'].grid(row=index + 1, column=0, sticky=W)
+
+        start_at_text = StringVar()
+        start_at_text.set(command['at'] * 1000)
+        self.stimulate_lines[index]['start_at_input'] = Entry(frame, width=20, textvariable=start_at_text)
+        self.stimulate_lines[index]['start_at_input'].grid(row=index + 1, column=1, sticky=W)
         self.stimulate_lines[index]['label_end_at'] = Label(frame, text='结束时间（毫秒）')
-        self.stimulate_lines[index]['label_end_at'].grid(row=1, column=2, sticky=W)
-        self.stimulate_lines[index]['end_at_input'] = Entry(frame, width=20)
-        self.stimulate_lines[index]['end_at_input'].grid(row=1, column=3, sticky=W)
+        self.stimulate_lines[index]['label_end_at'].grid(row=index + 1, column=2, sticky=W)
+        end_at_text = StringVar()
+        end_at_text.set(command['at'] * 1000 + 200)
+        self.stimulate_lines[index]['end_at_input'] = Entry(frame, width=20, textvariable=end_at_text)
+        self.stimulate_lines[index]['end_at_input'].grid(row=index + 1, column=3, sticky=W)
         self.stimulate_lines[index]['ppi_button'] = Button(frame, text="计算 PPI", command=self.report)
-        self.stimulate_lines[index]['ppi_button'].grid(row=1, column=4, sticky=E)
+        self.stimulate_lines[index]['ppi_button'].grid(row=index + 1, column=4, sticky=E)
         self.stimulate_lines[index]['text_report'] = Entry(frame, width=20)
-        self.stimulate_lines[index]['text_report'].grid(row=1, column=5, sticky=E)
+        self.stimulate_lines[index]['text_report'].grid(row=index + 1, column=5, sticky=E)
 
     def report(self):
         (start_at, p, pp, ppi, data) = self.frighten_device.report(int(self.start_at_input.get()),
