@@ -1,9 +1,5 @@
 pool_interval: 0.01
 commands:
-  - command: 'login'
-    at: 0
-  - command: 'start experiment'
-    at: 1
   - command: 'light on'
     at: 3
   - command: 'light off'

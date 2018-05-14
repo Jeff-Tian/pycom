@@ -96,20 +96,39 @@ class FrightenDevice:
         thread.start()
         self.gui.change_status('开始询问重力数据……')
 
-    def stop(self):
-        pass
+    def exit(self):
+        self.experiment_started = False
+        self.toggle_asking(False)
+
+    def login(self):
+        self.gui.change_status('登录中……')
+        self.issue_command(commands['login'], command_responses['login'], 3)
 
     def start_experiment(self):
+        try:
+            self.login()
+        except:
+            self.exit()
+            messagebox.showinfo('实验未能开始', '登录失败！')
+            return
+
         messagebox.showinfo('实验开始！', '实验要开始了！')
         self.init_filename()
         self.experiment_started = True
         self.toggle_asking(True)
+
+        try:
+            self.issue_command(commands['start_experiment'], command_responses['start_experiment'], 3)
+        except:
+            self.exit()
+            messagebox.showinfo('实验未能开始', '设备未能正确应答')
+            return
+
         for i, value in enumerate(self.gui.config['commands']):
             self.set_command(value)
 
     def stop_experiment(self):
-        self.experiment_started = False
-        self.toggle_asking(False)
+        self.exit()
         self.read_in_residual_data()
         self.issue_command(commands['end_experiment'], command_responses['end_experiment'])
         messagebox.showinfo('实验结束！', '实验结束了！')
@@ -145,21 +164,32 @@ class FrightenDevice:
                                    self.handle_gravity_data)
                 sleep(1)
 
-    def issue_command(self, command, expected_response):
+    def issue_command(self, command, expected_response, retry_times=0):
         if self.ser.isOpen:
             self.gui.change_status('发送命令：{}'.format(hex_decode(command)))
             self.last_command = command
             try:
-                self.ser.write(command)
-            except Exception as ex:
-                print(ex)
-                self.gui.change_status('串口通信写入失败！')
-            try:
-                self.get_response(expected_response)
-            except TimeoutError:
-                self.gui.change_status('超时未获得回复')
-            except Exception as ex:
-                self.gui.change_status(ex)
+                try:
+                    self.ser.write(command)
+
+                    try:
+                        self.get_response(expected_response)
+                    except TimeoutError:
+                        self.gui.change_status('超时未获得回复')
+                        raise
+                    except Exception as ex:
+                        self.gui.change_status(ex)
+                        raise
+                except Exception as ex:
+                    print(ex)
+                    self.gui.change_status('串口通信写入失败！')
+                    raise
+            except:
+                if retry_times > 0:
+                    self.issue_command(command, expected_response, retry_times - 1)
+                else:
+                    self.gui.change_status('重了 {} 次，仍然失败……'.format(retry_times))
+                    raise
         else:
             self.gui.change_status('不能发送命令，COM 端口没有打开！')
 

@@ -8,7 +8,7 @@ import serial
 
 from FrightenDevice import FrightenDevice, command_responses, commands, printx
 import yaml
-
+import os
 from helper import hex_decode
 
 __author__ = 'freedom'
@@ -101,7 +101,7 @@ class GUI(Frame):
         menu_bar = Menu(window)
 
         file_menu = Menu(menu_bar, tearoff=0)
-        file_menu.add_command(label='打开数据文件', command=self.open_file)
+        file_menu.add_command(label='打开数据文件', command=self.open_data_file)
         file_menu.add_command(label='加载配置', command=self.read_config)
         file_menu.add_command(label='保存配置', command=self.save_config)
         file_menu.add_separator()
@@ -150,6 +150,7 @@ class GUI(Frame):
             messagebox.showinfo('试验进行中', '请等待试验结束后再开始')
             return
 
+        self.read_config()
         self.frighten_device.start_experiment()
 
     def stop_experiment(self):
@@ -159,20 +160,23 @@ class GUI(Frame):
 
         self.frighten_device.stop_experiment()
 
-    def open_file(self):
+    def open_data_file(self):
         if self.frighten_device.experiment_started:
             messagebox.showinfo('实验正在进行', '请先结束试验！')
             return
 
         self.frighten_device.toggle_asking(False)
-        file_path = filedialog.askopenfilename(initialdir='.', title="选择文件", filetypes=[('逗号分隔文件', '*.*')])
-        self.frighten_device.plot_csv(file_path)
+        data_file_path = filedialog.askopenfilename(initialdir='.', title="选择文件", filetypes=[('逗号分隔文件', '*.*')])
+        config_file_path = os.path.splitext(data_file_path)[0] + '.yaml'
 
-    def read_config(self):
+        self.read_config(config_file_path)
+        self.frighten_device.plot_csv(data_file_path)
+
+    def read_config(self, config_file_path='./config.yaml'):
         if self.frighten_device.experiment_started:
             messagebox.showinfo('实验正在进行', '请先结束试验！')
             return
-        with open('./config.yaml', 'r') as stream:
+        with open(config_file_path, 'r') as stream:
             self.config = yaml.load(stream)
 
         return self.config
