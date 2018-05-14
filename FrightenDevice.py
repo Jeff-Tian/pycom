@@ -72,7 +72,7 @@ class FrightenDevice:
         self.y = []
         self.first_write = True
 
-        if gui != None:
+        if gui is not None:
             self.fig = Figure(figsize=(self.window.winfo_screenwidth(), 6))
             self.chart = self.fig.add_subplot(111)
             self.canvas = FigureCanvasTkAgg(self.fig, master=self.window)
@@ -196,10 +196,9 @@ class FrightenDevice:
     def plot_gravity_data(self, data):
         points_per_screen = 30
 
-        printx('drawing data for ', data)
         try:
             self.index += 1 * 30
-            self.x = self.x + [i + self.index for i in range(30)]
+            self.x += [i + self.index for i in range(30)]
             self.y = self.y + data
 
             self.chart.cla()
@@ -207,12 +206,13 @@ class FrightenDevice:
             # self.chart.set_xticklabels(self.x[-points_per_screen:], rotation=17)
             self.chart.set_title(label=u'PP = {}'.format(np.average(self.y)))
             self.canvas.draw()
-            printx('drew chart for ', data)
         except ValueError as ex:
             printx(ex)
             pass
 
-        printx('done drawing for ', data)
+    def compute_ppi(self):
+        stimulate_time = len(self.gui.config['commands'])
+        messagebox.showinfo(stimulate_time, '刺激了这么多次')
 
     def plot_csv(self, csv_file):
         self.gui.change_status('正在读取文件……')
@@ -236,6 +236,7 @@ class FrightenDevice:
             print(ex)
             messagebox.showinfo('画图失败！', '可能是文件格式不对，或者没有数据。')
         self.gui.change_status('画图完毕.')
+        self.compute_ppi()
 
     def append_data_to_file(self, data=None):
         if self.first_write:

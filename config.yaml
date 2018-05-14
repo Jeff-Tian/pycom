@@ -4,9 +4,9 @@ commands:
     at: 3
   - command: 'light off'
     at: 8
-  - command: '加电'
+  - command: 'electricity on'
     at: 10
-  - command: '关电'
+  - command: 'electricity off'
     at: 12
   - command: 'noise setting'
     at: 14

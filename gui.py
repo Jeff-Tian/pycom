@@ -79,8 +79,6 @@ class GUI(Frame):
         self.close_serial_button = Button(frame, text='关闭串口', command=self.close_serial)
         self.close_serial_button.grid(row=0, column=4, sticky=W)
 
-        self.make_report()
-
         window.protocol('WM_DELETE_WINDOW', self.close_window)
 
         bind_event_data(window, '<<data_received>>', self.data_received)
@@ -179,7 +177,11 @@ class GUI(Frame):
         with open(config_file_path, 'r') as stream:
             self.config = yaml.load(stream)
 
+        self.update_ui()
         return self.config
+
+    def update_ui(self):
+        self.make_report()
 
     def save_config(self):
         if self.frighten_device.experiment_started:
@@ -280,23 +282,25 @@ class GUI(Frame):
             chk.state(['!selected'])
 
     def make_report(self):
+        self.stimulate_lines = {}
+        self.make_stimulate()
+
+    def make_stimulate(self, index=0):
         frame = self.frame
+        self.stimulate_lines[index] = {}
 
-        self.label_start_at = Label(frame, text='开始时间（毫秒）')
-        self.label_start_at.grid(row=1, column=0, sticky=W)
-        self.start_at_input = Entry(frame, width=20)
-        self.start_at_input.grid(row=1, column=1, sticky=W)
-
-        self.label_end_at = Label(frame, text='结束时间（毫秒）')
-        self.label_end_at.grid(row=1, column=2, sticky=W)
-        self.end_at_input = Entry(frame, width=20)
-        self.end_at_input.grid(row=1, column=3, sticky=W)
-
-        self.ppi_button = Button(frame, text="计算 PPI", command=self.report)
-        self.ppi_button.grid(row=1, column=4, sticky=E)
-
-        self.text_report = Entry(frame, width=20)
-        self.text_report.grid(row=1, column=5, sticky=E)
+        self.stimulate_lines[index]['label_start_at'] = Label(frame, text='开始时间（毫秒）')
+        self.stimulate_lines[index]['label_start_at'].grid(row=1, column=0, sticky=W)
+        self.stimulate_lines[index]['start_at_input'] = Entry(frame, width=20)
+        self.stimulate_lines[index]['start_at_input'].grid(row=1, column=1, sticky=W)
+        self.stimulate_lines[index]['label_end_at'] = Label(frame, text='结束时间（毫秒）')
+        self.stimulate_lines[index]['label_end_at'].grid(row=1, column=2, sticky=W)
+        self.stimulate_lines[index]['end_at_input'] = Entry(frame, width=20)
+        self.stimulate_lines[index]['end_at_input'].grid(row=1, column=3, sticky=W)
+        self.stimulate_lines[index]['ppi_button'] = Button(frame, text="计算 PPI", command=self.report)
+        self.stimulate_lines[index]['ppi_button'].grid(row=1, column=4, sticky=E)
+        self.stimulate_lines[index]['text_report'] = Entry(frame, width=20)
+        self.stimulate_lines[index]['text_report'].grid(row=1, column=5, sticky=E)
 
     def report(self):
         (start_at, p, pp, ppi, data) = self.frighten_device.report(int(self.start_at_input.get()),
