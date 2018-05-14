@@ -165,11 +165,15 @@ class GUI(Frame):
             return
 
         self.frighten_device.toggle_asking(False)
-        data_file_path = filedialog.askopenfilename(initialdir='.', title="选择文件", filetypes=[('逗号分隔文件', '*.*')])
-        config_file_path = os.path.splitext(data_file_path)[0] + '.yaml'
+        data_file_path = filedialog.askopenfilename(initialdir='.', title="选择文件", filetypes=[('逗号分隔文件', '*.csv')])
 
-        self.read_config(config_file_path)
-        self.frighten_device.plot_csv(data_file_path)
+        if data_file_path != '':
+            config_file_path = os.path.splitext(data_file_path)[0] + '.yaml'
+
+            self.read_config(config_file_path)
+            self.frighten_device.plot_csv(data_file_path)
+        else:
+            self.change_status('打开文件取消。')
 
     def read_config(self, config_file_path='./config.yaml'):
         if self.frighten_device.experiment_started:
