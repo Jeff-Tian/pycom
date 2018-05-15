@@ -1,36 +1,63 @@
 pool_interval: 0.01
 
 commands:
-  - command: 'light on'
+  - command: 'light'
     at: 3
+    module:
+      1: True
+      2: True
+      3: True
+      4: True
 
-  - command: 'light off'
+  - command: 'light'
     at: 8
+    module:
+      1: False
+      2: False
+      3: False
+      4: False
 
-  - command: 'electricity on'
+  - command: 'electricity'
     at: 10
-    module: 3
+    module:
+      1: True
+      2: True
+      3: True
+      4: True
 
-  - command: 'electricity off'
+  - command: 'electricity'
     at: 12
+    module:
+      1: False
+      2: False
+      3: False
+      4: False
 
-  - command: 'noise setting'
+  - command: 'beep setting'
     at: 14
     frequency: 20
-    beep: 2
+    module: 2
 
-  - command: 'noise on'
+  - command: 'beep setting'
+    at: 14
+    frequency: 30
+    module: 3
+
+  - command: 'beep'
     at: 15
-    module: 1
-    frequence: 255
+    module:
+      1: True
+      2: True
+      3: True
+      4: True
 
-  - command: 'noise on'
-    at: 18
-    module: 1
-    frequence: 1000
-
-  - command: 'noise off'
+  - command: 'beep'
     at: 21
+    module:
+      1: False
+      2: False
+      3: False
+      4: False
 
   - command: 'flash on'
     at: 22

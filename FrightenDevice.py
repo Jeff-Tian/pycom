@@ -297,54 +297,42 @@ class FrightenDevice:
 
     def execute_command(self, command):
         if not self.experiment_started:
-            printx('skipping command: {}... at {}'.format(command['command'].encode('utf-8').decode('utf8'), gmtime()))
+            self.gui.change_status(
+                '因为实验停止，跳过命令: {}... at {}'.format(command['command'].encode('utf-8').decode('utf8'), gmtime()))
             return
 
-        printx('executing command: {}..., at {}'.format(command['command'].encode('utf8').decode('utf8'), gmtime()))
         self.toggle_asking(False)
         self.read_in_residual_data()
 
-        if command['command'] == 'light on':
-            self.light_on()
-        if command['command'] == 'light off':
-            self.light_off()
-        if command['command'] == 'electricity on':
-            self.electricity_on()
-        if command['command'] == 'electricity off':
-            self.electricity_off()
-        if command['command'] == 'noise setting':
-            self.set_noise()
-        if command['command'] == 'noise on':
-            self.noise_on(command)
+        if command['command'] == 'light':
+            self.light_on_off(command)
+        if command['command'] == 'electricity':
+            self.electricity_on_off(command)
+        if command['command'] == 'beep setting':
+            self.set_noise(command)
+        if command['command'] == 'beep':
+            self.noise_on_off(command)
         if command['command'] == 'flash on':
             self.flash_on()
         if command['command'] == 'end experiment':
             self.stop_experiment()
 
         self.restore_asking()
-        printx('asking again')
 
     def flash_on(self):
         self.issue_command(commands['flash_on'], command_responses['flash_on'])
 
-    def noise_on(self, command):
+    def noise_on_off(self, command):
+        self.issue_command(self.get_beep_on(command), self.get_beep_on_response(command))
+
+    def set_noise(self, command):
         self.issue_command(self.get_beep_setting(command), self.get_beep_setting_response(command))
-        self.issue_command(commands['beep_on_off'], command_responses['beep_on_off'])
 
-    def set_noise(self):
-        self.issue_command(commands['beep'], command_responses['beep'])
+    def electricity_on_off(self, command):
+        self.issue_command(self.get_electricity_on_off(command), self.get_electricity_on_off_response(command))
 
-    def electricity_off(self):
-        self.issue_command(commands['electricity_on_off'], command_responses['electricity_on_off'])
-
-    def electricity_on(self):
-        self.issue_command(commands['electricity_on_off'], command_responses['electricity_on_off'])
-
-    def light_off(self):
-        self.issue_command(commands['light_on_off'], command_responses['light_on_off'])
-
-    def light_on(self):
-        self.issue_command(commands['light_on_off'], command_responses['light_on_off'])
+    def light_on_off(self, command):
+        self.issue_command(self.get_light_on_off(command), self.get_light_on_off_response(command))
 
     def read_in_residual_data(self):
         n = self.ser.inWaiting()
@@ -397,7 +385,7 @@ class FrightenDevice:
 
         return map[module]
 
-    def get_electricity_on(self, command):
+    def get_electricity_on_off(self, command):
         return bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45,
                           self.get_on_off_module(command['module'])])
 
@@ -409,8 +397,19 @@ class FrightenDevice:
             4: 0x08
         }
 
+        if module is None:
+            return 0x00
+
         if type(module) is list:
             four_bit = functools.reduce(lambda prev, next: prev | next, [map[m] for m in module], 0x00)
+        elif type(module) is dict:
+            a = []
+
+            for k in ['1', '2', '3', '4']:
+                if k in module and module[k] == True:
+                    a.append(int(k))
+
+            return self.get_on_off_module(a)
         else:
             four_bit = map[module]
 
@@ -419,3 +418,19 @@ class FrightenDevice:
     def get_beep_on(self, command):
         return bytearray(
             [0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x42, self.get_on_off_module(command['module'])])
+
+    def get_beep_on_response(self, command):
+        return bytearray(
+            [0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x42, self.get_on_off_module(command['module'])])
+
+    def get_electricity_on_off_response(self, command):
+        return bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x45,
+                          self.get_on_off_module(command['module'])])
+
+    def get_light_on_off(self, command):
+        return bytearray(
+            [0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x4C, self.get_on_off_module(command['module'])])
+
+    def get_light_on_off_response(self, command):
+        return bytearray(
+            [0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x4C, self.get_on_off_module(command['module'])])

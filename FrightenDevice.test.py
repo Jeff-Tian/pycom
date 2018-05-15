@@ -24,7 +24,7 @@ class TestFrightenDevice(unittest.TestCase):
         self.assertEqual(3.5032461608120439e-45, pp)
         self.assertEqual(-0.041666666666662064, ppi)
 
-    def test_beep_module(self):
+    def test_beep_set_module(self):
         frighten_device = FrightenDevice(None)
 
         self.assertEqual(
@@ -67,7 +67,7 @@ class TestFrightenDevice(unittest.TestCase):
             })
         )
 
-    def test_beep_frequency(self):
+    def test_beep_set_frequency(self):
         frighten_device = FrightenDevice(None)
 
         self.assertEqual(
@@ -94,44 +94,90 @@ class TestFrightenDevice(unittest.TestCase):
             })
         )
 
-    def test_beep_on_module(self):
+    def test_beep_on_off(self):
         frighten_device = FrightenDevice(None)
 
         self.assertEqual(
             bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x42, 0x77]),
             frighten_device.get_beep_on({
-                'module': [1, 2, 3]
+                'module': {
+                    '1': True,
+                    '2': True,
+                    '3': True,
+                    '4': False
+                }
             })
         )
 
-    def test_electricity_on_module(self):
+    def test_electricity_on_off(self):
         frighten_device = FrightenDevice(None)
 
         self.assertEqual(
             bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45, 0x88]),
-            frighten_device.get_electricity_on({
-                'module': 4
+            frighten_device.get_electricity_on_off({
+                'module': {
+                    '4': True
+                }
             })
         )
 
         self.assertEqual(
             bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45, 0x44]),
-            frighten_device.get_electricity_on({
-                'module': 3
+            frighten_device.get_electricity_on_off({
+                'module': {
+                    '3': True
+                }
             })
         )
 
         self.assertEqual(
             bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45, 0xaa]),
-            frighten_device.get_electricity_on({
-                'module': [2, 4]
+            frighten_device.get_electricity_on_off({
+                'module': {
+                    '2': True,
+                    '4': True
+                }
             })
         )
 
         self.assertEqual(
             bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45, 0xff]),
-            frighten_device.get_electricity_on({
-                'module': [1, 2, 3, 4]
+            frighten_device.get_electricity_on_off({
+                'module': {
+                    '1': True,
+                    '2': True,
+                    '3': True,
+                    '4': True
+                }
+            })
+        )
+
+    def test_light_on_off(self):
+        frighten_device = FrightenDevice(None)
+
+        self.assertEqual(
+            bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x4C, 0xff]),
+            frighten_device.get_light_on_off({
+                'module': {
+                    '1': True,
+                    '2': True,
+                    '3': True,
+                    '4': True
+                }
+            })
+        )
+
+        self.assertEqual(
+            bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x4C, 0x00]),
+            frighten_device.get_light_on_off({
+                'module': {}
+            })
+        )
+
+        self.assertEqual(
+            bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x4C, 0x00]),
+            frighten_device.get_light_on_off({
+                'module': None
             })
         )
 
