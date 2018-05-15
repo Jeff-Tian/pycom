@@ -71,6 +71,7 @@ class FrightenDevice:
         self.x = []
         self.y = []
         self.first_write = True
+        self.current_pd = None
 
         if gui is not None:
             self.fig = Figure(figsize=(self.window.winfo_screenwidth(), 6))
@@ -211,7 +212,7 @@ class FrightenDevice:
             pass
 
     def compute_ppi(self):
-        stimulate_time = len(self.gui.config['commands'])
+        pass
 
     def plot_csv(self, csv_file):
         self.gui.change_status('正在读取文件……')
@@ -336,15 +337,18 @@ class FrightenDevice:
             n = self.ser.inWaiting()
 
     def report(self, start_time_in_ms, end_time_in_ms):
-        experiment_start_at = self.current_pd.timestamp[0]
-        start_at = datetime.datetime.strptime(experiment_start_at, date_time_format)
-        filter_start = start_at + datetime.timedelta(microseconds=start_time_in_ms * 1000)
-        filter_end = start_at + datetime.timedelta(microseconds=end_time_in_ms * 1000)
+        if self.current_pd is not None:
+            experiment_start_at = self.current_pd.timestamp[0]
+            start_at = datetime.datetime.strptime(experiment_start_at, date_time_format)
+            filter_start = start_at + datetime.timedelta(microseconds=start_time_in_ms * 1000)
+            filter_end = start_at + datetime.timedelta(microseconds=end_time_in_ms * 1000)
 
-        filter_start = datetime.datetime.strftime(filter_start, date_time_format)
-        filter_end = datetime.datetime.strftime(filter_end, date_time_format)
+            filter_start = datetime.datetime.strftime(filter_start, date_time_format)
+            filter_end = datetime.datetime.strftime(filter_end, date_time_format)
 
-        filtered_data = self.current_pd[
-            (self.current_pd.timestamp >= filter_start) & (self.current_pd.timestamp < filter_end)]
+            filtered_data = self.current_pd[
+                (self.current_pd.timestamp >= filter_start) & (self.current_pd.timestamp < filter_end)]
 
-        return (experiment_start_at,) + PPI.get_ppi(self.current_pd.data, filtered_data.data) + (filtered_data,)
+            return (experiment_start_at,) + PPI.get_ppi(self.current_pd.data, filtered_data.data) + (filtered_data,)
+        else:
+            return 0, 0, 0, 0, 0

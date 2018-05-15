@@ -168,14 +168,14 @@ class GUI(Frame):
         data_file_path = filedialog.askopenfilename(initialdir='.', title="选择文件", filetypes=[('逗号分隔文件', '*.csv')])
 
         if data_file_path != '':
+            self.frighten_device.plot_csv(data_file_path)
+            
             config_file_path = os.path.splitext(data_file_path)[0] + '.yaml'
 
             try:
                 self.read_config(config_file_path)
             except:
                 self.read_config()
-
-            self.frighten_device.plot_csv(data_file_path)
         else:
             self.change_status('打开文件取消。')
 
@@ -308,13 +308,15 @@ class GUI(Frame):
         self.stimulate_lines[index]['label_start_at'].grid(row=index + 1, column=0, sticky=W)
 
         start_at_text = StringVar()
-        start_at_text.set(command['at'] * 1000)
+        start_at = command['at'] * 1000
+        start_at_text.set(start_at)
         self.stimulate_lines[index]['start_at_input'] = Entry(frame, width=20, textvariable=start_at_text)
         self.stimulate_lines[index]['start_at_input'].grid(row=index + 1, column=1, sticky=W)
         self.stimulate_lines[index]['label_end_at'] = Label(frame, text='结束时间（毫秒）')
         self.stimulate_lines[index]['label_end_at'].grid(row=index + 1, column=2, sticky=W)
         end_at_text = StringVar()
-        end_at_text.set(command['at'] * 1000 + 200)
+        end_at = start_at + 200
+        end_at_text.set(end_at)
         self.stimulate_lines[index]['end_at_input'] = Entry(frame, width=20, textvariable=end_at_text)
         self.stimulate_lines[index]['end_at_input'].grid(row=index + 1, column=3, sticky=W)
         self.stimulate_lines[index]['ppi_button'] = Button(frame, text="计算 PPI",
@@ -331,10 +333,13 @@ class GUI(Frame):
         self.stimulate_lines[index]['text_report'] = Entry(frame, width=20)
         self.stimulate_lines[index]['text_report'].grid(row=index + 1, column=5, sticky=E)
 
+        self.report(command, start_at, end_at, self.stimulate_lines[index]['text_report'])
+
     def report(self, command, start_at, end_at, text_report):
         (start_at, p, pp, ppi, data) = self.frighten_device.report(int(start_at), int(end_at))
         text_report.delete(0, END)
         text_report.insert(0, '{0:.4f}%'.format(ppi * 100))
+        print('ppi = ', ppi)
 
 
 def debug_mode(argv):
