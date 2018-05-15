@@ -206,8 +206,8 @@ class FrightenDevice:
             self.gui.change_status('不能发送命令，COM 端口没有打开！')
 
     def plot_gravity_data(self, data):
-        for i in range(5):
-            threading.Timer((i + 1) / 5, lambda: self.plot_it(data[(i * 6):(i * 6 + 5)])).start()
+        for i in range(6):
+            threading.Timer((i + 1) / 6, lambda: self.plot_it(data[(i * 5):(i * 5 + 4)])).start()
 
     def compute_ppi(self):
         pass
@@ -440,14 +440,14 @@ class FrightenDevice:
         points_per_screen = 30
 
         try:
-            self.index += 6
-            self.x += [i + self.index for i in range(6)]
+            self.index += 5
+            self.x += [i + self.index for i in range(5)]
             self.y = self.y + data
 
             self.chart.cla()
             self.chart.plot(self.x[-points_per_screen:], self.y[-points_per_screen:], 'bo--')
             # self.chart.set_xticklabels(self.x[-points_per_screen:], rotation=17)
-            self.chart.set_title(label=u'PP = {}'.format(np.average(self.y)))
+            self.chart.set_title(label=u'PP = {}'.format(np.average(PPI.get_amplitudes(self.y))))
             self.canvas.draw()
         except ValueError as ex:
             pass

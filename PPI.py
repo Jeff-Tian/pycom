@@ -38,6 +38,7 @@ class PPI(object):
 
     @staticmethod
     def get_ppi(full_data, filtered_data):
+        # TODO: What if the p is zero?
         p = np.average(PPI.get_amplitudes(filtered_data))
         pp = np.average(PPI.get_amplitudes(full_data))
         ppi = (p - pp) / p
