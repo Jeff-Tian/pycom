@@ -78,6 +78,31 @@ class TestFrightenDevice(unittest.TestCase):
             })
         )
 
+        self.assertEqual(
+            bytearray([0xAA, 0x4A, 0x4C, 0x09, 0x00, 0x84, 0x02, 0x00, 0x01, 0x41, 0x31, 0xff, 0x00, 0x00]),
+            frighten_device.get_beep_setting({
+                'module': 1,
+                'frequency': 255
+            })
+        )
+
+    def test_electricity_module(self):
+        frighten_device = FrightenDevice(None)
+
+        self.assertEqual(
+            bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45, 0x88]),
+            frighten_device.get_electricity_setting({
+                'module': 4
+            })
+        )
+
+        self.assertEqual(
+            bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45, 0x44]),
+            frighten_device.get_electricity_setting({
+                'module': 3
+            })
+        )
+
 
 if __name__ == '__main__':
     unittest.main()

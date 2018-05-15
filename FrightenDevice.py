@@ -397,3 +397,19 @@ class FrightenDevice:
             return 0x34
 
         return 0x34
+
+    def get_electricity_setting(self, command):
+        return bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45,
+                          self.get_electricity_module(int(command['module']))])
+
+    def get_electricity_module(self, module):
+        if module == 1:
+            return 0x11
+        if module == 2:
+            return 0x22
+        if module == 3:
+            return 0x44
+        if module == 4:
+            return 0x88
+
+        return 0x11

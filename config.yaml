@@ -1,28 +1,39 @@
 pool_interval: 0.01
+
 commands:
   - command: 'light on'
     at: 3
+
   - command: 'light off'
     at: 8
+
   - command: 'electricity on'
     at: 10
+    module: 3
+
   - command: 'electricity off'
     at: 12
+
   - command: 'noise setting'
     at: 14
-    db: 20
-    beep: beep2
+    frequency: 20
+    beep: 2
+
   - command: 'noise on'
     at: 15
     module: 1
     frequence: 255
+
   - command: 'noise on'
     at: 18
     module: 1
     frequence: 1000
+
   - command: 'noise off'
     at: 21
+
   - command: 'flash on'
     at: 22
+
   - command: 'end experiment'
     at: 25
