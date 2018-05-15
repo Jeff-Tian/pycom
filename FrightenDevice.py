@@ -372,7 +372,7 @@ class FrightenDevice:
 
     def get_beep_setting(self, command):
         return bytearray(
-            [0xAA, 0x4A, 0x4C, 0x09, 0x00, 0x84, 0x02, 0x00, 0x01, 0x41, self.get_beep_module(int(command['module']))] +
+            [0xAA, 0x4A, 0x4C, 0x09, 0x00, 0x84, 0x02, 0x00, 0x01, 0x41, self.get_beep_module(command['module'])] +
             self.get_beep_frequency(int(command['frequency'])))
 
     def get_beep_frequency(self, freq=5):
@@ -388,22 +388,20 @@ class FrightenDevice:
              0x00])
 
     def get_beep_module(self, module=1):
-        if module == 1:
-            return 0x31
-        if module == 2:
-            return 0x32
-        if module == 3:
-            return 0x33
-        if module == 4:
-            return 0x34
+        map = {
+            1: 0x31,
+            2: 0x32,
+            3: 0x33,
+            4: 0x34
+        }
 
-        return 0x34
+        return map[module]
 
-    def get_electricity_setting(self, command):
+    def get_electricity_on(self, command):
         return bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45,
-                          self.get_electricity_module(command['module'])])
+                          self.get_on_off_module(command['module'])])
 
-    def get_electricity_module(self, module=1):
+    def get_on_off_module(self, module=1):
         map = {
             1: 0x01,
             2: 0x02,
@@ -417,3 +415,7 @@ class FrightenDevice:
             four_bit = map[module]
 
         return (four_bit << 4) | four_bit
+
+    def get_beep_on(self, command):
+        return bytearray(
+            [0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x42, self.get_on_off_module(command['module'])])
