@@ -81,7 +81,7 @@ class FrightenDevice:
             self.canvas = FigureCanvasTkAgg(self.fig, master=self.window)
             self.canvas.get_tk_widget().pack()
 
-        self.keep_ask = False
+        self.keep_ask = True
 
         self.experiment_started = False
 
