@@ -14,9 +14,15 @@ commands:
     beep: beep2
   - command: 'noise on'
     at: 15
-  - command: 'noise off'
-    at: 16
-  - command: 'flash on'
-    at: 17
-  - command: 'end experiment'
+    module: 1
+    frequence: 255
+  - command: 'noise on'
     at: 18
+    module: 1
+    frequence: 1000
+  - command: 'noise off'
+    at: 21
+  - command: 'flash on'
+    at: 22
+  - command: 'end experiment'
+    at: 25

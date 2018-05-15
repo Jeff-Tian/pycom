@@ -313,7 +313,7 @@ class FrightenDevice:
         if command['command'] == 'noise setting':
             self.set_noise()
         if command['command'] == 'noise on':
-            self.noise_on()
+            self.noise_on(command)
         if command['command'] == 'flash on':
             self.flash_on()
         if command['command'] == 'end experiment':
@@ -325,7 +325,8 @@ class FrightenDevice:
     def flash_on(self):
         self.issue_command(commands['flash_on'], command_responses['flash_on'])
 
-    def noise_on(self):
+    def noise_on(self, command):
+        self.issue_command(self.get_beep_setting(command), self.get_beep_setting_response(command))
         self.issue_command(commands['beep_on_off'], command_responses['beep_on_off'])
 
     def set_noise(self):
@@ -366,3 +367,27 @@ class FrightenDevice:
             return (experiment_start_at,) + PPI.get_ppi(self.current_pd.data, filtered_data.data) + (filtered_data,)
         else:
             return 0, 0, 0, 0, 0
+
+    def get_beep_setting(self, command):
+        return bytearray(
+            [0xAA, 0x4A, 0x4C, 0x09, 0x00, 0x84, 0x02, 0x00, 0x01, 0x41, self.get_module(int(command['module'])), 0x05,
+             0x00,
+             0x00])
+
+    def get_beep_setting_response(self, command):
+        return bytearray(
+            [0xaa, 0x4a, 0x4c, 0x09, 0x00, 0x84, 0x03, 0x00, 0x01, 0x41, self.get_module(int(command['module'])), 0x05,
+             0x00,
+             0x00])
+
+    def get_module(self, module):
+        if module == 1:
+            return 0x31
+        if module == 2:
+            return 0x32
+        if module == 3:
+            return 0x33
+        if module == 4:
+            return 0x34
+
+        return 0x34
