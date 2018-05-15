@@ -209,6 +209,8 @@ class FrightenDevice:
         points_per_screen = 30
 
         try:
+            for i in range(30):
+                threading.Timer((i + 1) / 30, lambda: print('hello')).start()
             self.index += 1 * 30
             self.x += [i + self.index for i in range(30)]
             self.y = self.y + data
