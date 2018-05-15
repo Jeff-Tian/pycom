@@ -103,6 +103,20 @@ class TestFrightenDevice(unittest.TestCase):
             })
         )
 
+        self.assertEqual(
+            bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45, 0xaa]),
+            frighten_device.get_electricity_setting({
+                'module': [2, 4]
+            })
+        )
+
+        self.assertEqual(
+            bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45, 0xff]),
+            frighten_device.get_electricity_setting({
+                'module': [1, 2, 3, 4]
+            })
+        )
+
 
 if __name__ == '__main__':
     unittest.main()

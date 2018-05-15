@@ -7,6 +7,7 @@ from tkinter import messagebox
 
 import io
 
+import functools
 import yaml
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -400,16 +401,19 @@ class FrightenDevice:
 
     def get_electricity_setting(self, command):
         return bytearray([0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x45,
-                          self.get_electricity_module(int(command['module']))])
+                          self.get_electricity_module(command['module'])])
 
-    def get_electricity_module(self, module):
-        if module == 1:
-            return 0x11
-        if module == 2:
-            return 0x22
-        if module == 3:
-            return 0x44
-        if module == 4:
-            return 0x88
+    def get_electricity_module(self, module=1):
+        map = {
+            1: 0x01,
+            2: 0x02,
+            3: 0x04,
+            4: 0x08
+        }
 
-        return 0x11
+        if type(module) is list:
+            four_bit = functools.reduce(lambda prev, next: prev | next, [map[m] for m in module], 0x00)
+        else:
+            four_bit = map[module]
+
+        return (four_bit << 4) | four_bit
