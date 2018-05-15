@@ -155,7 +155,8 @@ class FrightenDevice:
 
     def handle_gravity_data(self, data):
         gravity_data = PPI.parse_gravity_data(data)
-        # self.gui.change_status('{}：{}g'.format(hex_decode(data), gravity_data))
+        self.gui.change_status('{}：{}g'.format(hex_decode(data), gravity_data))
+        print(gravity_data)
         self.plot_gravity_data(gravity_data)
         if self.experiment_started:
             self.append_data_to_file(gravity_data)
@@ -163,8 +164,12 @@ class FrightenDevice:
     def ask_gravity_data(self):
         while self.ser.isOpen:
             if self.keep_ask:
-                self.issue_command(commands['gravity_data'],
-                                   self.handle_gravity_data)
+                try:
+                    self.issue_command(commands['gravity_data'],
+                                       self.handle_gravity_data)
+                except:
+                    pass
+
                 sleep(1)
 
     def issue_command(self, command, expected_response, retry_times=0):
@@ -287,7 +292,8 @@ class FrightenDevice:
                 break
             else:
                 if waited >= timeout:
-                    raise TimeoutError
+                    # raise TimeoutError
+                    break
 
                 sleep(self.gui.config['pool_interval'])
                 waited += self.gui.config['pool_interval']
