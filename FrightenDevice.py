@@ -1,3 +1,4 @@
+import struct
 import threading
 
 from time import gmtime, sleep
@@ -370,17 +371,22 @@ class FrightenDevice:
 
     def get_beep_setting(self, command):
         return bytearray(
-            [0xAA, 0x4A, 0x4C, 0x09, 0x00, 0x84, 0x02, 0x00, 0x01, 0x41, self.get_module(int(command['module'])), 0x05,
-             0x00,
-             0x00])
+            [0xAA, 0x4A, 0x4C, 0x09, 0x00, 0x84, 0x02, 0x00, 0x01, 0x41, self.get_beep_module(int(command['module']))] +
+            self.get_beep_frequency(int(command['frequency'])))
+
+    def get_beep_frequency(self, freq=5):
+        bytes = struct.pack('L', freq)
+
+        return [bytes[0], bytes[1], bytes[2]]
 
     def get_beep_setting_response(self, command):
         return bytearray(
-            [0xaa, 0x4a, 0x4c, 0x09, 0x00, 0x84, 0x03, 0x00, 0x01, 0x41, self.get_module(int(command['module'])), 0x05,
+            [0xaa, 0x4a, 0x4c, 0x09, 0x00, 0x84, 0x03, 0x00, 0x01, 0x41, self.get_beep_module(int(command['module'])),
+             0x05,
              0x00,
              0x00])
 
-    def get_module(self, module):
+    def get_beep_module(self, module=1):
         if module == 1:
             return 0x31
         if module == 2:

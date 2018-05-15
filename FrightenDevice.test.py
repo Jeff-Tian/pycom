@@ -24,41 +24,57 @@ class TestFrightenDevice(unittest.TestCase):
         self.assertEqual(3.5032461608120439e-45, pp)
         self.assertEqual(-0.041666666666662064, ppi)
 
-    def test_noise_setting_command(self):
+    def test_beep_module(self):
         frighten_device = FrightenDevice(None)
 
         self.assertEqual(
             bytearray([0xAA, 0x4A, 0x4C, 0x09, 0x00, 0x84, 0x02, 0x00, 0x01, 0x41, 0x31, 0x05, 0x00, 0x00]),
             frighten_device.get_beep_setting({
-                'module': 1
+                'module': 1,
+                'frequency': 5
             })
         )
 
         self.assertEqual(
             bytearray([0xAA, 0x4A, 0x4C, 0x09, 0x00, 0x84, 0x02, 0x00, 0x01, 0x41, 0x32, 0x05, 0x00, 0x00]),
             frighten_device.get_beep_setting({
-                'module': 2
+                'module': 2,
+                'frequency': 5
             })
         )
 
         self.assertEqual(
             bytearray([0xAA, 0x4A, 0x4C, 0x09, 0x00, 0x84, 0x02, 0x00, 0x01, 0x41, 0x33, 0x05, 0x00, 0x00]),
             frighten_device.get_beep_setting({
-                'module': 3
+                'module': 3,
+                'frequency': 5
             })
         )
 
         self.assertEqual(
             bytearray([0xAA, 0x4A, 0x4C, 0x09, 0x00, 0x84, 0x02, 0x00, 0x01, 0x41, 0x34, 0x05, 0x00, 0x00]),
             frighten_device.get_beep_setting({
-                'module': 4
+                'module': 4,
+                'frequency': 5
             })
         )
 
         self.assertEqual(
             bytearray([0xaa, 0x4a, 0x4c, 0x09, 0x00, 0x84, 0x03, 0x00, 0x01, 0x41, 0x34, 0x05, 0x00, 0x00]),
             frighten_device.get_beep_setting_response({
-                'module': 4
+                'module': 4,
+                'frequency': 5
+            })
+        )
+
+    def test_beep_frequency(self):
+        frighten_device = FrightenDevice(None)
+
+        self.assertEqual(
+            bytearray([0xAA, 0x4A, 0x4C, 0x09, 0x00, 0x84, 0x02, 0x00, 0x01, 0x41, 0x31, 0xe8, 0x03, 0x00]),
+            frighten_device.get_beep_setting({
+                'module': 1,
+                'frequency': 1000
             })
         )
 
