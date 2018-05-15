@@ -2,6 +2,7 @@ pool_interval: 0.01
 
 commands:
   - command: 'light'
+    stimulate: True
     at: 3
     module:
       1: True
@@ -12,12 +13,10 @@ commands:
   - command: 'light'
     at: 8
     module:
-      1: False
-      2: False
-      3: False
-      4: False
+
 
   - command: 'electricity'
+    stimulate: True
     at: 10
     module:
       1: True
@@ -44,6 +43,7 @@ commands:
     module: 3
 
   - command: 'beep'
+    stimulate: True
     at: 15
     module:
       1: True

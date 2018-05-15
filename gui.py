@@ -169,7 +169,7 @@ class GUI(Frame):
 
         if data_file_path != '':
             self.frighten_device.plot_csv(data_file_path)
-            
+
             config_file_path = os.path.splitext(data_file_path)[0] + '.yaml'
 
             try:
@@ -297,8 +297,10 @@ class GUI(Frame):
                 self.stimulate_lines[key]['text_report'].destroy()
 
         self.stimulate_lines = {}
-        for i in range(0, len(self.config['commands'])):
-            self.make_stimulate(self.config['commands'][i], i)
+        stimulate_commands = [command for command in self.config['commands'] if
+                              ('stimulate' in command) and (command['stimulate'] == True)]
+        for i in range(0, len(stimulate_commands)):
+            self.make_stimulate(stimulate_commands[i], i)
 
     def make_stimulate(self, command, index=0):
         frame = self.frame
@@ -339,7 +341,6 @@ class GUI(Frame):
         (start_at, p, pp, ppi, data) = self.frighten_device.report(int(start_at), int(end_at))
         text_report.delete(0, END)
         text_report.insert(0, '{0:.4f}%'.format(ppi * 100))
-        print('ppi = ', ppi)
 
 
 def debug_mode(argv):
