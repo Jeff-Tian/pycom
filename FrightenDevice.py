@@ -189,7 +189,7 @@ class FrightenDevice:
                 if retry_times > 0:
                     self.issue_command(command, expected_response, retry_times - 1)
                 else:
-                    self.gui.change_status('重了 {} 次，仍然失败……'.format(retry_times))
+                    self.gui.change_status('重试了几次，仍然失败了……'.format(retry_times))
                     raise
         else:
             self.gui.change_status('不能发送命令，COM 端口没有打开！')
@@ -302,32 +302,46 @@ class FrightenDevice:
         self.toggle_asking(False)
         self.read_in_residual_data()
 
-        # TODO： 登录命令有什么用？如果返回数据不符合期望，做什么？重试吗？
-        if command['command'] == 'login':
-            self.issue_command(commands['login'], command_responses['login'])
-        # TODO: 对于开始试验，如果返回结果错误，是要重试吗？
-        if command['command'] == 'start experiment':
-            self.issue_command(commands['start_experiment'], command_responses['start_experiment'])
-        # TODO: 是否有专门的灯开灯关命令？还是说第一次是开，第二次同一个命令就关了？
         if command['command'] == 'light on':
-            self.issue_command(commands['light_on_off'], command_responses['light_on_off'])
+            self.light_on()
         if command['command'] == 'light off':
-            self.issue_command(commands['light_on_off'], command_responses['light_on_off'])
-        if command['command'] == '加电':
-            self.issue_command(commands['electricity_on_off'])
-        if command['command'] == '关电':
-            self.issue_command(commands['electricity_on_off'])
+            self.light_off()
+        if command['command'] == 'electricity on':
+            self.electricity_on()
+        if command['command'] == 'electricity off':
+            self.electricity_off()
         if command['command'] == 'noise setting':
-            self.issue_command(commands['beep'], command_responses['beep'])
+            self.set_noise()
         if command['command'] == 'noise on':
-            self.issue_command(commands['beep_on_off'], command_responses['beep_on_off'])
+            self.noise_on()
         if command['command'] == 'flash on':
-            self.issue_command(commands['flash_on'], command_responses['flash_on'])
+            self.flash_on()
         if command['command'] == 'end experiment':
             self.stop_experiment()
 
         self.restore_asking()
         printx('asking again')
+
+    def flash_on(self):
+        self.issue_command(commands['flash_on'], command_responses['flash_on'])
+
+    def noise_on(self):
+        self.issue_command(commands['beep_on_off'], command_responses['beep_on_off'])
+
+    def set_noise(self):
+        self.issue_command(commands['beep'], command_responses['beep'])
+
+    def electricity_off(self):
+        self.issue_command(commands['electricity_on_off'], command_responses['electricity_on_off'])
+
+    def electricity_on(self):
+        self.issue_command(commands['electricity_on_off'], command_responses['electricity_on_off'])
+
+    def light_off(self):
+        self.issue_command(commands['light_on_off'], command_responses['light_on_off'])
+
+    def light_on(self):
+        self.issue_command(commands['light_on_off'], command_responses['light_on_off'])
 
     def read_in_residual_data(self):
         n = self.ser.inWaiting()
