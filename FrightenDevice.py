@@ -82,6 +82,7 @@ class FrightenDevice:
             self.canvas.get_tk_widget().pack()
 
         self.keep_ask = True
+        self.last_asking_status = None
 
         self.experiment_started = False
 
@@ -101,7 +102,6 @@ class FrightenDevice:
 
     def exit(self):
         self.experiment_started = False
-        self.toggle_asking(False)
 
     def login(self):
         self.gui.change_status('登录中……')
@@ -135,14 +135,18 @@ class FrightenDevice:
         self.read_in_residual_data()
         self.issue_command(commands['end_experiment'], command_responses['end_experiment'])
         messagebox.showinfo('实验结束！', '实验结束了！')
-        printx('实验结束！')
+        self.restore_asking()
 
     def restore_asking(self):
+        print('last status = ', self.last_asking_status)
         if self.last_asking_status is not None:
             self.keep_ask = self.last_asking_status
+            self.last_asking_status = None
 
     def toggle_asking(self, on_off=None):
-        self.last_asking_status = self.keep_ask
+        if self.last_asking_status is None:
+            self.last_asking_status = self.keep_ask
+
         if on_off is not None:
             self.keep_ask = on_off
         else:
@@ -155,8 +159,8 @@ class FrightenDevice:
 
     def handle_gravity_data(self, data):
         gravity_data = PPI.parse_gravity_data(data)
-        self.gui.change_status('{}：{}g'.format(hex_decode(data), gravity_data))
-        print(gravity_data)
+        # self.gui.change_status('{}：{}g'.format(hex_decode(data), gravity_data))
+        # print(gravity_data)
         self.plot_gravity_data(gravity_data)
         if self.experiment_started:
             self.append_data_to_file(gravity_data)
@@ -197,7 +201,7 @@ class FrightenDevice:
                     self.issue_command(command, expected_response, retry_times - 1)
                 else:
                     self.gui.change_status('重试了几次，仍然失败了……'.format(retry_times))
-                    raise
+                    # raise
         else:
             self.gui.change_status('不能发送命令，COM 端口没有打开！')
 
@@ -308,20 +312,24 @@ class FrightenDevice:
             return
 
         self.toggle_asking(False)
-        self.read_in_residual_data()
 
-        if command['command'] == 'light':
-            self.light_on_off(command)
-        if command['command'] == 'electricity':
-            self.electricity_on_off(command)
-        if command['command'] == 'beep setting':
-            self.set_noise(command)
-        if command['command'] == 'beep':
-            self.noise_on_off(command)
-        if command['command'] == 'flash on':
-            self.flash_on()
-        if command['command'] == 'end experiment':
-            self.stop_experiment()
+        try:
+            self.read_in_residual_data()
+
+            if command['command'] == 'light':
+                self.light_on_off(command)
+            if command['command'] == 'electricity':
+                self.electricity_on_off(command)
+            if command['command'] == 'beep setting':
+                self.set_noise(command)
+            if command['command'] == 'beep':
+                self.noise_on_off(command)
+            if command['command'] == 'flash on':
+                self.flash_on()
+            if command['command'] == 'end experiment':
+                self.stop_experiment()
+        except:
+            pass
 
         self.restore_asking()
 
