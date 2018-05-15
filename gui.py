@@ -170,7 +170,11 @@ class GUI(Frame):
         if data_file_path != '':
             config_file_path = os.path.splitext(data_file_path)[0] + '.yaml'
 
-            self.read_config(config_file_path)
+            try:
+                self.read_config(config_file_path)
+            except:
+                self.read_config()
+
             self.frighten_device.plot_csv(data_file_path)
         else:
             self.change_status('打开文件取消。')
@@ -229,10 +233,6 @@ class GUI(Frame):
 
             if len(self.ports_list['value']) == 1:
                 self.open_serial()
-        else:
-            if not self.debug_mode:
-                messagebox.showinfo("程序停止", "没有可用的 COM 端口！")
-                exit(1)
 
     def get_available_com_ports(self):
         ports = []
@@ -317,16 +317,24 @@ class GUI(Frame):
         end_at_text.set(command['at'] * 1000 + 200)
         self.stimulate_lines[index]['end_at_input'] = Entry(frame, width=20, textvariable=end_at_text)
         self.stimulate_lines[index]['end_at_input'].grid(row=index + 1, column=3, sticky=W)
-        self.stimulate_lines[index]['ppi_button'] = Button(frame, text="计算 PPI", command=self.report)
+        self.stimulate_lines[index]['ppi_button'] = Button(frame, text="计算 PPI",
+                                                           command=lambda:
+                                                           self.report(command,
+                                                                       self.stimulate_lines[
+                                                                           index][
+                                                                           'start_at_input'].get(),
+                                                                       self.stimulate_lines[
+                                                                           index][
+                                                                           'end_at_input'].get(),
+                                                                       self.stimulate_lines[index]['text_report']))
         self.stimulate_lines[index]['ppi_button'].grid(row=index + 1, column=4, sticky=E)
         self.stimulate_lines[index]['text_report'] = Entry(frame, width=20)
         self.stimulate_lines[index]['text_report'].grid(row=index + 1, column=5, sticky=E)
 
-    def report(self):
-        (start_at, p, pp, ppi, data) = self.frighten_device.report(int(self.start_at_input.get()),
-                                                                   int(self.end_at_input.get()))
-        self.text_report.delete(0, END)
-        self.text_report.insert(0, '{0:.4f}%'.format(ppi * 100))
+    def report(self, command, start_at, end_at, text_report):
+        (start_at, p, pp, ppi, data) = self.frighten_device.report(int(start_at), int(end_at))
+        text_report.delete(0, END)
+        text_report.insert(0, '{0:.4f}%'.format(ppi * 100))
 
 
 def debug_mode(argv):

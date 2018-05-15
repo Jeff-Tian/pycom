@@ -212,7 +212,6 @@ class FrightenDevice:
 
     def compute_ppi(self):
         stimulate_time = len(self.gui.config['commands'])
-        messagebox.showinfo(stimulate_time, '刺激了这么多次')
 
     def plot_csv(self, csv_file):
         self.gui.change_status('正在读取文件……')
