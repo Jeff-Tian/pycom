@@ -81,7 +81,7 @@ class GUI(Frame):
 
         window.protocol('WM_DELETE_WINDOW', self.close_window)
 
-        bind_event_data(window, '<<data_received>>', self.data_received)
+        # bind_event_data(window, '<<data_received>>', self.data_received)
 
         self.stimulate_lines = None
         self.read_config()
@@ -210,9 +210,7 @@ class GUI(Frame):
         self.frighten_device.restore_asking()
 
     def data_received(self, event):
-        printx(event.data)
-        # self.show.delete(0.0, END)
-        # self.show.insert(0.0, event.data)
+        pass
 
     def init_serial(self):
         # 串口初始化配置

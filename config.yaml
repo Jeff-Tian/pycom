@@ -1,10 +1,10 @@
-pool_interval: 0.01
+pool_interval: 0.02
 base_gravity: 0
 
 commands:
   - command: 'light'
     stimulate: True
-    at: 3
+    at: 1
     module:
       1: True
       2: True
@@ -12,13 +12,13 @@ commands:
       4: True
 
   - command: 'light'
-    at: 8
+    at: 3
     module:
 
 
   - command: 'electricity'
     stimulate: True
-    at: 10
+    at: 5
     module:
       1: True
       2: True
@@ -26,7 +26,7 @@ commands:
       4: True
 
   - command: 'electricity'
-    at: 12
+    at: 7
     module:
       1: False
       2: False
@@ -34,36 +34,22 @@ commands:
       4: False
 
   - command: 'beep setting'
-    at: 14
-    frequency: 5
-    module: 3
-
-  - command: 'beep setting'
-    at: 14
-    frequency: 100
+    at: 9
+    frequency: 3000
     module: 4
 
   - command: 'beep'
     stimulate: True
-    at: 15
-    module:
-      1: True
-      2: True
-      3: True
-      4: True
-      
- 
-  - command: 'beep'
-    stimulate: True
-    at: 17
+    at: 11
     module:
       1: True
       2: True
       3: True
       4: True
 
+
   - command: 'beep'
-    at: 21
+    at: 13
     module:
       1: False
       2: False
@@ -71,7 +57,7 @@ commands:
       4: False
 
   - command: 'flash on'
-    at: 22
+    at: 15
 
   - command: 'end experiment'
-    at: 25
+    at: 17

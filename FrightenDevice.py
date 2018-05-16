@@ -133,9 +133,8 @@ class FrightenDevice:
     def stop_experiment(self):
         self.exit()
         self.read_in_residual_data()
-        self.issue_command(commands['end_experiment'], command_responses['end_experiment'])
+        self.issue_command(commands['end_experiment'], command_responses['end_experiment'], 3)
         messagebox.showinfo('实验结束！', '实验结束了！')
-        self.restore_asking()
 
     def restore_asking(self):
         print('last status = ', self.last_asking_status)
@@ -158,12 +157,13 @@ class FrightenDevice:
         printx('asking = ', self.keep_ask)
 
     def handle_gravity_data(self, data):
-        gravity_data = PPI.parse_gravity_data(data, self.gui.config['base_gravity'])
-        # self.gui.change_status('{}：{}g'.format(hex_decode(data), gravity_data))
-        # print(gravity_data)
-        self.plot_gravity_data(gravity_data)
-        if self.experiment_started:
-            self.append_data_to_file(gravity_data)
+        if data[0:9] == command_responses['gravity_data'][0:9]:
+            gravity_data = PPI.parse_gravity_data(data, self.gui.config['base_gravity'])
+            # self.gui.change_status('{}：{}g'.format(hex_decode(data), gravity_data))
+            # print(gravity_data)
+            self.plot_gravity_data(gravity_data)
+            if self.experiment_started:
+                self.append_data_to_file(gravity_data)
 
     def ask_gravity_data(self):
         while self.ser.isOpen:
@@ -263,7 +263,7 @@ class FrightenDevice:
         with io.open(self.config_file_name, 'w', encoding='utf8') as config_file:
             yaml.dump(self.gui.config, config_file, default_flow_style=False, allow_unicode=True)
 
-    def get_response(self, expected_response=None, timeout=1):
+    def get_response(self, expected_response=None, timeout=0.01):
         waited = 0
 
         while True:
@@ -283,12 +283,13 @@ class FrightenDevice:
                 else:
                     self.gui.change_status('命令执行失败。{}{}{}{}'.format('命令返回：', hex_decode(data), ' 期待：',
                                                                     hex_decode(expected_response)))
+                    self.read_in_residual_data()
 
-                self.window.event_generate('<<data_received>>', when='tail', data=hex_decode(data))
+                # self.window.event_generate('<<data_received>>', when='tail', data=hex_decode(data))
                 break
             else:
                 if waited >= timeout:
-                    # raise TimeoutError
+                    raise TimeoutError
                     break
 
                 sleep(self.gui.config['pool_interval'])
@@ -320,6 +321,7 @@ class FrightenDevice:
             return
 
         self.toggle_asking(False)
+        sleep(self.gui.config['pool_interval'])
 
         try:
             self.read_in_residual_data()
@@ -339,6 +341,8 @@ class FrightenDevice:
         except:
             pass
 
+        sleep(self.gui.config['pool_interval'])
+        self.read_in_residual_data()
         self.restore_asking()
 
     def flash_on(self):
@@ -358,12 +362,15 @@ class FrightenDevice:
 
     def read_in_residual_data(self):
         n = self.ser.inWaiting()
-        while n > 0:
+        i = 0
+        while n > 0 or i > 2:
             self.ser.read(n)
             sleep(self.gui.config['pool_interval'])
             n = self.ser.inWaiting()
 
     def report(self, start_time_in_ms, end_time_in_ms):
+        print('start_time = ', start_time_in_ms)
+        print('end_time = ', end_time_in_ms)
         if self.current_pd is not None:
             experiment_start_at = self.current_pd.timestamp[0]
             start_at = datetime.datetime.strptime(experiment_start_at, date_time_format)
@@ -373,9 +380,12 @@ class FrightenDevice:
             filter_start = datetime.datetime.strftime(filter_start, date_time_format)
             filter_end = datetime.datetime.strftime(filter_end, date_time_format)
 
+            print('filter start = ', filter_start)
+            print('filter end = ', filter_end)
             filtered_data = self.current_pd[
                 (self.current_pd.timestamp >= filter_start) & (self.current_pd.timestamp < filter_end)]
 
+            print('filtered = ', filtered_data)
             return (experiment_start_at,) + PPI.get_ppi(self.current_pd.data, filtered_data.data) + (filtered_data,)
         else:
             return 0, 0, 0, 0, 0
