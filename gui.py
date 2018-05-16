@@ -132,7 +132,7 @@ class GUI(Frame):
                                      command_responses['electricity_on_off']))
         command_menu.add_command(label='重力数据返回 ' + ' '.join(hex_decode(commands['gravity_data'])),
                                  command=lambda: self.issue_command(
-                                     commands['gravity_data'], command_responses['gravity_data']))
+                                     commands['gravity_data'], self.frighten_device.handle_gravity_data))
         command_menu.add_command(label='亮灯 ' + ' '.join(hex_decode(commands['flash_on_'])),
                                  command=lambda: self.issue_command(
                                      commands['flash_on_'],

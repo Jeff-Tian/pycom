@@ -1,4 +1,5 @@
 pool_interval: 0.01
+base_gravity: 0
 
 commands:
   - command: 'light'

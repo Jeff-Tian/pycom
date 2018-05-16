@@ -158,7 +158,7 @@ class FrightenDevice:
         printx('asking = ', self.keep_ask)
 
     def handle_gravity_data(self, data):
-        gravity_data = PPI.parse_gravity_data(data)
+        gravity_data = PPI.parse_gravity_data(data, self.gui.config['base_gravity'])
         # self.gui.change_status('{}：{}g'.format(hex_decode(data), gravity_data))
         # print(gravity_data)
         self.plot_gravity_data(gravity_data)
@@ -361,13 +361,9 @@ class FrightenDevice:
             return 0, 0, 0, 0, 0
 
     def get_beep_setting(self, command):
-        c = bytearray(
+        return bytearray(
             [0xAA, 0x4A, 0x4C, 0x09, 0x00, 0x84, 0x02, 0x00, 0x01, 0x41, self.get_beep_module(command['module'])] +
             self.get_beep_frequency(int(command['frequency'])))
-
-        print('c = ', c, hex_decode(c))
-
-        return c
 
     def get_beep_frequency(self, freq=5):
         bytes = struct.pack('L', freq)
@@ -422,10 +418,8 @@ class FrightenDevice:
         return (four_bit << 4) | four_bit
 
     def get_beep_on(self, command):
-        c = bytearray(
+        return bytearray(
             [0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x42, self.get_on_off_module(command['module'])])
-        print('beep c = ', hex_decode(c), command['module'])
-        return c
 
     def get_beep_on_response(self, command):
         return bytearray(
