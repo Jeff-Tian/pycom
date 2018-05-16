@@ -248,6 +248,7 @@ class FrightenDevice:
             if data is not None:
                 need_to_write = []
                 start = datetime.datetime.utcnow()
+                start -= datetime.timedelta(seconds=1)
                 stop = len(data)
                 for i in range(stop):
                     start += datetime.timedelta(seconds=1 / stop)
