@@ -289,6 +289,7 @@ class GUI(Frame):
     def make_report(self):
         if self.stimulate_lines is not None:
             for key, value in self.stimulate_lines.items():
+                self.stimulate_lines[key]['stimulate_name'].destroy()
                 self.stimulate_lines[key]['label_start_at'].destroy()
                 self.stimulate_lines[key]['start_at_input'].destroy()
                 self.stimulate_lines[key]['label_end_at'].destroy()
@@ -306,34 +307,35 @@ class GUI(Frame):
         frame = self.frame
         self.stimulate_lines[index] = {}
 
+        self.stimulate_lines[index]['stimulate_name'] = Label(frame, text=command['command'])
+        self.stimulate_lines[index]['stimulate_name'].grid(row=index + 1, column=0, sticky=W)
         self.stimulate_lines[index]['label_start_at'] = Label(frame, text='开始时间（毫秒）')
-        self.stimulate_lines[index]['label_start_at'].grid(row=index + 1, column=0, sticky=W)
+        self.stimulate_lines[index]['label_start_at'].grid(row=index + 1, column=1, sticky=W)
 
         start_at_text = StringVar()
         start_at = command['at'] * 1000
         start_at_text.set(start_at)
         self.stimulate_lines[index]['start_at_input'] = Entry(frame, width=20, textvariable=start_at_text)
-        self.stimulate_lines[index]['start_at_input'].grid(row=index + 1, column=1, sticky=W)
+        self.stimulate_lines[index]['start_at_input'].grid(row=index + 1, column=2, sticky=W)
         self.stimulate_lines[index]['label_end_at'] = Label(frame, text='结束时间（毫秒）')
-        self.stimulate_lines[index]['label_end_at'].grid(row=index + 1, column=2, sticky=W)
+        self.stimulate_lines[index]['label_end_at'].grid(row=index + 1, column=3, sticky=W)
         end_at_text = StringVar()
         end_at = start_at + 200
         end_at_text.set(end_at)
         self.stimulate_lines[index]['end_at_input'] = Entry(frame, width=20, textvariable=end_at_text)
-        self.stimulate_lines[index]['end_at_input'].grid(row=index + 1, column=3, sticky=W)
-        self.stimulate_lines[index]['ppi_button'] = Button(frame, text="计算 PPI",
-                                                           command=lambda:
-                                                           self.report(command,
-                                                                       self.stimulate_lines[
-                                                                           index][
-                                                                           'start_at_input'].get(),
-                                                                       self.stimulate_lines[
-                                                                           index][
-                                                                           'end_at_input'].get(),
-                                                                       self.stimulate_lines[index]['text_report']))
-        self.stimulate_lines[index]['ppi_button'].grid(row=index + 1, column=4, sticky=E)
+        self.stimulate_lines[index]['end_at_input'].grid(row=index + 1, column=4, sticky=W)
+        self.stimulate_lines[index]['ppi_button'] = Button(frame, text="计算 PPI", command=lambda:
+        self.report(command,
+                    self.stimulate_lines[
+                        index][
+                        'start_at_input'].get(),
+                    self.stimulate_lines[
+                        index][
+                        'end_at_input'].get(),
+                    self.stimulate_lines[index]['text_report']))
+        self.stimulate_lines[index]['ppi_button'].grid(row=index + 1, column=5, sticky=E)
         self.stimulate_lines[index]['text_report'] = Entry(frame, width=20)
-        self.stimulate_lines[index]['text_report'].grid(row=index + 1, column=5, sticky=E)
+        self.stimulate_lines[index]['text_report'].grid(row=index + 1, column=6, sticky=E)
 
         self.report(command, start_at, end_at, self.stimulate_lines[index]['text_report'])
 
