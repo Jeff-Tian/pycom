@@ -185,6 +185,7 @@ class FrightenDevice:
                     self.ser.write(command)
 
                     try:
+                        # TODO: validate response
                         self.get_response(expected_response)
                     except TimeoutError:
                         self.gui.change_status('超时未获得回复')
@@ -321,19 +322,19 @@ class FrightenDevice:
         self.restore_asking()
 
     def flash_on(self):
-        self.issue_command(commands['flash_on'], command_responses['flash_on'])
+        self.issue_command(commands['flash_on'], command_responses['flash_on'], 3)
 
     def noise_on_off(self, command):
-        self.issue_command(self.get_beep_on(command), self.get_beep_on_response(command))
+        self.issue_command(self.get_beep_on(command), self.get_beep_on_response(command), 3)
 
     def set_noise(self, command):
-        self.issue_command(self.get_beep_setting(command), self.get_beep_setting_response(command))
+        self.issue_command(self.get_beep_setting(command), self.get_beep_setting_response(command), 3)
 
     def electricity_on_off(self, command):
-        self.issue_command(self.get_electricity_on_off(command), self.get_electricity_on_off_response(command))
+        self.issue_command(self.get_electricity_on_off(command), self.get_electricity_on_off_response(command), 3)
 
     def light_on_off(self, command):
-        self.issue_command(self.get_light_on_off(command), self.get_light_on_off_response(command))
+        self.issue_command(self.get_light_on_off(command), self.get_light_on_off_response(command), 3)
 
     def read_in_residual_data(self):
         n = self.ser.inWaiting()
@@ -360,9 +361,13 @@ class FrightenDevice:
             return 0, 0, 0, 0, 0
 
     def get_beep_setting(self, command):
-        return bytearray(
+        c = bytearray(
             [0xAA, 0x4A, 0x4C, 0x09, 0x00, 0x84, 0x02, 0x00, 0x01, 0x41, self.get_beep_module(command['module'])] +
             self.get_beep_frequency(int(command['frequency'])))
+
+        print('c = ', c, hex_decode(c))
+
+        return c
 
     def get_beep_frequency(self, freq=5):
         bytes = struct.pack('L', freq)
@@ -406,7 +411,7 @@ class FrightenDevice:
         elif type(module) is dict:
             a = []
 
-            for k in ['1', '2', '3', '4']:
+            for k in ['1', '2', '3', '4', 1, 2, 3, 4]:
                 if k in module and module[k] == True:
                     a.append(int(k))
 
@@ -417,8 +422,10 @@ class FrightenDevice:
         return (four_bit << 4) | four_bit
 
     def get_beep_on(self, command):
-        return bytearray(
+        c = bytearray(
             [0xAA, 0x4A, 0x4C, 0x06, 0x00, 0x84, 0x02, 0x00, 0x01, 0x42, self.get_on_off_module(command['module'])])
+        print('beep c = ', hex_decode(c), command['module'])
+        return c
 
     def get_beep_on_response(self, command):
         return bytearray(

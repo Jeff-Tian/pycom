@@ -34,17 +34,27 @@ commands:
 
   - command: 'beep setting'
     at: 14
-    frequency: 20
-    module: 2
+    frequency: 5
+    module: 3
 
   - command: 'beep setting'
     at: 14
-    frequency: 30
-    module: 3
+    frequency: 100
+    module: 4
 
   - command: 'beep'
     stimulate: True
     at: 15
+    module:
+      1: True
+      2: True
+      3: True
+      4: True
+      
+ 
+  - command: 'beep'
+    stimulate: True
+    at: 17
     module:
       1: True
       2: True
