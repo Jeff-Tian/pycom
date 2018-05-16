@@ -53,7 +53,7 @@ command_responses = {
     'beep_on_off': bytearray([0xaa, 0x4a, 0x4c, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x42, 0x88]),
     'light_on_off': bytearray([0xaa, 0x4a, 0x4c, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x4c, 0x88]),
     'electricity_on_off': bytearray([0xaa, 0x4a, 0x4c, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x45, 0x88]),
-    'gravity_data': bytearray([0xaa]),
+    'gravity_data': bytearray([0xaa, 0x4a, 0x4c, 0x7c, 0x00, 0x85, 0x10, 0x00, 0x01]),
     'flash_on': bytearray([0xaa, 0x4a, 0x4c, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x45, 0x11]),
     'flash_on_': bytearray([0xaa, 0x4a, 0x4c, 0x06, 0x00, 0x84, 0x03, 0x00, 0x01, 0x4C, 0x11]),
 }
@@ -207,8 +207,10 @@ class FrightenDevice:
             self.gui.change_status('不能发送命令，COM 端口没有打开！')
 
     def plot_gravity_data(self, data):
+        if len(data) != 30:
+            print(' should return 30 data, but got: ', data)
         for i in range(6):
-            threading.Timer((i + 1) / 6, lambda: self.plot_it(data[(i * 5):(i * 5 + 4)])).start()
+            threading.Timer((i + 1) / 6, lambda: self.plot_it(data[(i * 5):(i * 5 + 5)])).start()
 
     def compute_ppi(self):
         pass
@@ -270,6 +272,8 @@ class FrightenDevice:
             if n > 0:
                 data = self.ser.read(n)
 
+                data = self.wait_for_gravity_data_done(data)
+
                 if expected_response is None:
                     self.gui.change_status('收到数据：{}'.format(hex_decode(data)))
                 elif callable(expected_response):
@@ -289,6 +293,22 @@ class FrightenDevice:
 
                 sleep(self.gui.config['pool_interval'])
                 waited += self.gui.config['pool_interval']
+
+    def wait_for_gravity_data_done(self, data, retry=3):
+        # if data[0:9] == bytearray([0xaa, 0x4a, 0x4c, 0x7c, 0x00, 0x85, 0x10, 0x00, 0x01]):
+        if data[0:9] == command_responses['gravity_data'][0:9]:
+            if len(data) < 129:
+                sleep(self.gui.config['pool_interval'])
+                n = self.ser.inWaiting()
+                if n > 0:
+                    data += self.ser.read(n)
+                else:
+                    if retry > 0:
+                        return self.wait_for_gravity_data_done(data, retry - 1)
+                    else:
+                        print('----------- tried several times only got ', len(data), ' bits for gravity data')
+
+        return data
 
     def set_command(self, command):
         threading.Timer(command['at'], lambda: self.execute_command(command)).start()

@@ -10,19 +10,19 @@ __all__ = ['PPI']
 class PPI(object):
     @staticmethod
     def parse_gravity_data(data, base=0):
-        try:
-            ret = []
-            for index in range(30):
-                try:
-                    item = [data[9 + index * 4], data[10 + index * 4], data[11 + index * 4], data[12 + index * 4]]
-                    ret.append(PPI.parse_one_gravity_data(item, base))
-                except:
-                    ret.append(0)
+        ret = []
 
-            return ret
-        except:
-            print(traceback.format_exc())
-            return [0 for i in range(30)]
+        for index in range(30):
+            try:
+                item = [data[9 + index * 4], data[10 + index * 4], data[11 + index * 4], data[12 + index * 4]]
+                ret.append(PPI.parse_one_gravity_data(item, base))
+            except Exception as ex:
+                print('========================= error parse one item  : ', index, hex_decode(data))
+                print(ex)
+                print(traceback.format_exc())
+                ret.append(0)
+
+        return ret
 
     @staticmethod
     def parse_one_gravity_data(data, base=0):
