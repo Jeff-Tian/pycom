@@ -81,7 +81,8 @@ class FrightenDevice:
 
         if gui is not None:
             self.fig = Figure(figsize=(self.window.winfo_screenwidth(), 6))
-            self.chart = self.fig.add_subplot(111)
+            self.axes = self.fig.add_subplot(111)
+
             self.canvas = FigureCanvasTkAgg(self.fig, master=self.window)
             self.canvas.get_tk_widget().pack()
 
@@ -231,12 +232,12 @@ class FrightenDevice:
             print('self.x = ', self.x)
             self.y = data.data
 
-            self.chart.cla()
-            self.chart.clear()
+            self.axes.cla()
+            self.axes.clear()
 
-            self.chart.plot(self.x, self.y, 'bo--')
+            self.axes.plot(self.x, self.y, 'bo--')
             # self.chart.set_xticklabels(self.x, rotation=17)
-            self.chart.set_title(label=u'PP = {}'.format(np.average(self.y)))
+            self.axes.set_title(label=u'PP = {}'.format(np.average(self.y)))
             self.canvas.draw()
         except Exception as ex:
             print(ex)
@@ -482,12 +483,13 @@ class FrightenDevice:
         self.x += [i + self.index for i in range(5)]
         self.y = self.y + data
 
-        self.chart.cla()
-        self.chart.plot(self.x[-points_per_screen:], self.y[-points_per_screen:], 'bo--')
-        # self.chart.set_xticklabels(self.x[-points_per_screen:], rotation=17)
-        self.chart.set_title(label=u'PP = {}'.format(np.average(PPI.get_amplitudes(self.y))))
-        self.chart.set_xlabel(u'时间', fontproperties=ChineseFont)
-        self.chart.set_ylabel(u'重量数据', fontproperties=ChineseFont)
+        self.axes.cla()
+        self.axes.set_xlabel(u'时间', fontproperties=ChineseFont)
+        self.axes.set_ylabel(u'重量数据', fontproperties=ChineseFont)
+        self.axes.set_ylim([0, max(self.y)])
+
+        self.axes.plot(self.x[-points_per_screen:], self.y[-points_per_screen:], 'bo--')
+        self.axes.set_title(label=u'PP = {}'.format(np.average(PPI.get_amplitudes(self.y))))
         try:
             self.canvas.draw()
         except Exception as ex:
