@@ -90,6 +90,9 @@ class FrightenDevice:
         self.file_name = strftime('%Y-%m-%d %H%M%S.csv', gmtime())
         self.config_file_name = strftime('%Y-%m-%d %H%M%S.yaml', gmtime())
 
+        print('init file name = ', self.file_name)
+        print('inti config name = ', self.config_file_name)
+
     def start(self):
         # thread = threading.Thread(target=self.display_data_from_port, args=[])
         # thread.daemon = True
@@ -106,6 +109,7 @@ class FrightenDevice:
     def login(self):
         self.gui.change_status('登录中……')
         self.issue_command(commands['login'], command_responses['login'], 3)
+        self.first_write = True
 
     def start_experiment(self):
         try:
@@ -261,8 +265,10 @@ class FrightenDevice:
     def write_file(self):
         with open(self.file_name, 'w') as data_file:
             data_file.writelines(['{},{}'.format('timestamp', 'data'), '\n'])
-        with io.open(self.config_file_name, 'w', encoding='utf8') as config_file:
+            print('wrote data file to ', data_file)
+        with open(self.config_file_name, 'w', encoding='utf8') as config_file:
             yaml.dump(self.gui.config, config_file, default_flow_style=False, allow_unicode=True)
+            print('wrote config file = ', self.config_file_name)
 
     def get_response(self, expected_response=None, timeout=0.01):
         waited = 0
@@ -481,5 +487,9 @@ class FrightenDevice:
             # self.chart.set_xticklabels(self.x[-points_per_screen:], rotation=17)
             self.chart.set_title(label=u'PP = {}'.format(np.average(PPI.get_amplitudes(self.y))))
             self.canvas.draw()
-        except ValueError as ex:
+        except Exception as ex:
+            print(ex)
+            print('=====================')
+            print(self.x[-points_per_screen:])
+            print(self.y[-points_per_screen:])
             pass

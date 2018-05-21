@@ -106,3 +106,5 @@ ENV/
 *.yaml
 !config.yaml
 *.html
+
+dist.zip
