@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import struct
 import threading
 
@@ -5,12 +6,15 @@ from time import gmtime, sleep
 from time import strftime
 from tkinter import messagebox
 
-import io
-
 import functools
 import yaml
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+
+from matplotlib.font_manager import FontProperties
+
+ChineseFont = FontProperties('SimHei')
+
 import datetime
 import numpy as np
 
@@ -482,4 +486,9 @@ class FrightenDevice:
         self.chart.plot(self.x[-points_per_screen:], self.y[-points_per_screen:], 'bo--')
         # self.chart.set_xticklabels(self.x[-points_per_screen:], rotation=17)
         self.chart.set_title(label=u'PP = {}'.format(np.average(PPI.get_amplitudes(self.y))))
-        self.canvas.draw()
+        self.chart.set_xlabel(u'时间', fontproperties=ChineseFont)
+        self.chart.set_ylabel(u'重量数据', fontproperties=ChineseFont)
+        try:
+            self.canvas.draw()
+        except Exception as ex:
+            print(ex)

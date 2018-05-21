@@ -6,10 +6,6 @@ python gui.py
 ```
 
 ```
-pyinstaller --onefile --windowed gui.py
-```
-
-```
 1、登录：          AA 4A 4C 0C 00 81 02 00 01 11 11 22 22 02 04 01 01
 2、开始试验：      AA 4A 4C 05 00 84 02 00 01 47
 3、结束试验：      AA 4A 4C 05 00 84 02 00 01 4F

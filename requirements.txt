@@ -4,3 +4,4 @@ plotly
 pandas_datareader
 matplotlib
 pyyaml
+pyinstaller
