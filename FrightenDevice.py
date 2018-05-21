@@ -90,9 +90,6 @@ class FrightenDevice:
         self.file_name = strftime('%Y-%m-%d %H%M%S.csv', gmtime())
         self.config_file_name = strftime('%Y-%m-%d %H%M%S.yaml', gmtime())
 
-        print('init file name = ', self.file_name)
-        print('inti config name = ', self.config_file_name)
-
     def start(self):
         # thread = threading.Thread(target=self.display_data_from_port, args=[])
         # thread.daemon = True
@@ -370,9 +367,9 @@ class FrightenDevice:
     def read_in_residual_data(self):
         n = self.ser.inWaiting()
         i = 0
-        while n > 0 or i > 2:
+        while n > 0 and i < 2:
             self.ser.read(n)
-            sleep(self.gui.config['pool_interval'])
+            sleep(self.gui.config['pool_interval'] / 2)
             n = self.ser.inWaiting()
 
     def report(self, start_time_in_ms, end_time_in_ms):
@@ -477,19 +474,12 @@ class FrightenDevice:
     def plot_it(self, data):
         points_per_screen = 30
 
-        try:
-            self.index += 5
-            self.x += [i + self.index for i in range(5)]
-            self.y = self.y + data
+        self.index += 5
+        self.x += [i + self.index for i in range(5)]
+        self.y = self.y + data
 
-            self.chart.cla()
-            self.chart.plot(self.x[-points_per_screen:], self.y[-points_per_screen:], 'bo--')
-            # self.chart.set_xticklabels(self.x[-points_per_screen:], rotation=17)
-            self.chart.set_title(label=u'PP = {}'.format(np.average(PPI.get_amplitudes(self.y))))
-            self.canvas.draw()
-        except Exception as ex:
-            print(ex)
-            print('=====================')
-            print(self.x[-points_per_screen:])
-            print(self.y[-points_per_screen:])
-            pass
+        self.chart.cla()
+        self.chart.plot(self.x[-points_per_screen:], self.y[-points_per_screen:], 'bo--')
+        # self.chart.set_xticklabels(self.x[-points_per_screen:], rotation=17)
+        self.chart.set_title(label=u'PP = {}'.format(np.average(PPI.get_amplitudes(self.y))))
+        self.canvas.draw()
