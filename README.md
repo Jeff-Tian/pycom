@@ -6,7 +6,7 @@ python gui.py
 ```
 
 ```
-pyinstaller --onefile --windowed gui.py
+pyinstaller --onefile --windowed gui.spec
 ```
 
 ```
