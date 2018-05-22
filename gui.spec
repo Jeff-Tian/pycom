@@ -4,6 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['gui.py'],
+             datas=[('config.yaml', '.')],
              pathex=['C:\\Users\\Jeff\\pycom'],
              binaries=[],
              datas=[],
