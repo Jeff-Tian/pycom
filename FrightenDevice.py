@@ -160,8 +160,6 @@ class FrightenDevice:
             else:
                 self.keep_ask = True
 
-        printx('asking = ', self.keep_ask)
-
     def handle_gravity_data(self, data):
         if data[0:9] == command_responses['gravity_data'][0:9]:
             gravity_data = PPI.parse_gravity_data(data, self.gui.config['base_gravity'])

@@ -37,7 +37,6 @@ class GUI(Frame):
     def __init__(self, window, debug_mode=False):
 
         self.debug_mode = debug_mode
-        printx('debug mode = ', self.debug_mode)
         window.title('动物惊吓实验')
 
         self.make_status_bar(window)
@@ -57,22 +56,6 @@ class GUI(Frame):
 
         self.init_serial()
         self.make_com_list(frame)
-        # 输出框提示
-        # self.lab3 = Label(frame, text='收到的信息')
-        # self.lab3.grid(row=0, column=1, sticky=W)
-        # 输出框
-        # self.show = Text(frame, width=40, height=5, wrap=WORD)
-        # self.show.grid(row=1, column=1, rowspan=4, sticky=W)
-        # 输入框提示
-        # self.lab4 = Label(frame, text='要发送的信息')
-        # self.lab4.grid(row=5, column=1, sticky=W)
-        # 输入框
-        # self.input = Entry(frame, width=40)
-        # self.input.grid(row=6, column=1, rowspan=4, sticky=W)
-        # 输入按钮
-        # self.button1 = Button(frame, text="发送", command=self.submit)
-        # self.button1.grid(row=11, column=1, sticky=E)
-        # 串口开启按钮
         self.open_serial_button = Button(frame, text='打开串口', command=self.open_serial)
         self.open_serial_button.grid(row=0, column=3, sticky=W)
         # 串口关闭按钮
@@ -242,11 +225,6 @@ class GUI(Frame):
     def select_port(self, event):
         self.port = self.selected_port.get()
 
-    def submit(self):
-        context1 = self.start_at_input.get()
-        printx('about to write ', context1.encode('utf-8'))
-        self.ser.write(bytearray(context1.encode('utf-8')))
-
     def open_serial(self):
         self.ser.setPort(self.port)
         self.ser.open()
@@ -260,18 +238,9 @@ class GUI(Frame):
             self.change_status('串口已被关闭！')
 
     def close_window(self):
-        printx('closing window')
         # self.ser.close()
         # self.window.destroy()
         self.window.quit()
-
-    def read_from_port(self):
-        while self.ser.isOpen():
-            n = self.ser.inWaiting()
-            if n > 0:
-                response = self.ser.readline().decode('utf-8')
-                printx('response = ', strftime('%Y-%m-%d %H:%M:%S', gmtime()), response)
-                self.append_data_to_file(response)
 
     def make_frighten_controls(self):
         chk = ttk.Checkbutton(self.window, text='持续询问重力数据', command=self.frighten_device.toggle_asking)
@@ -345,10 +314,9 @@ class GUI(Frame):
 
 def debug_mode(argv):
     try:
-        printx('debug mode = ', argv.index('--debug'))
+        print('debug mode = ', argv.index('--debug'))
         return True
     except ValueError as ex:
-        printx(ex)
         return False
 
 
