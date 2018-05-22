@@ -9,6 +9,8 @@ import serial
 from FrightenDevice import FrightenDevice, command_responses, commands, printx
 import yaml
 import os
+
+from configure import ConfigureDialog
 from helper import hex_decode
 
 __author__ = 'freedom'
@@ -90,6 +92,24 @@ class GUI(Frame):
         file_menu.add_command(label='退出', command=self.close_window)
         menu_bar.add_cascade(label='文件', menu=file_menu)
 
+        command_menu = self.make_test_commands(menu_bar)
+
+        menu_bar.add_cascade(label='测试命令', menu=command_menu)
+        menu_bar.add_command(label='配置', command=self.configure_experiment)
+        menu_bar.add_command(label='开始实验', command=self.start_experiment)
+        menu_bar.add_command(label='结束实验', command=self.stop_experiment)
+
+        window.config(menu=menu_bar)
+
+    def configure_experiment(self):
+        if self.frighten_device.experiment_started:
+            messagebox.showinfo('请先停止实验', '只有停止实验后才能修改配置')
+            return
+
+        configureDialog = ConfigureDialog(self.window)
+        self.window.wait_window(configureDialog.modal_window)
+
+    def make_test_commands(self, menu_bar):
         command_menu = Menu(menu_bar, tearoff=0)
         command_menu.add_command(label='登录 ' + ' '.join(hex_decode(commands['login'])),
                                  command=lambda: self.issue_command(commands['login'], command_responses['login']))
@@ -120,12 +140,7 @@ class GUI(Frame):
                                  command=lambda: self.issue_command(
                                      commands['flash_on_'],
                                      command_responses['flash_on_']))
-
-        menu_bar.add_cascade(label='命令', menu=command_menu)
-        menu_bar.add_command(label='开始实验', command=self.start_experiment)
-        menu_bar.add_command(label='结束实验', command=self.stop_experiment)
-
-        window.config(menu=menu_bar)
+        return command_menu
 
     def start_experiment(self):
         if self.frighten_device.experiment_started:
