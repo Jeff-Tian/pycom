@@ -52,6 +52,13 @@ class ConfigureDialog:
                                          offvalue=0)
                     chk.grid(row=row, column=1, sticky=tk.W)
 
+                    label = tk.Label(self.modal_window, text='触发时间')
+                    label.grid(row=row, column=2, sticky=tk.W)
+
+                    at_text = tk.StringVar(value=o['at'])
+                    text_box = tk.Entry(self.modal_window, width=20, textvariable=at_text)
+                    text_box.grid(row=row, column=3, sticky=tk.W)
+
                     row += 1
 
     def is_stimulate(self, command):
