@@ -46,3 +46,20 @@ class ConfigureDialog:
                     label = tk.Label(self.modal_window, text=o['command'])
                     label.grid(row=row, column=0, sticky=tk.W)
                     row += 1
+
+                    is_stimulate = tk.IntVar()
+                    is_stimulate.set(self.is_stimulate(o))
+                    chk = tk.Checkbutton(self.modal_window, text='刺激', variable=is_stimulate, onvalue=1,
+                                         offvalue=0)
+                    chk.grid(row=row, column=1, sticky=tk.W)
+
+                    row += 1
+
+    def is_stimulate(self, command):
+        if 'stimulate' in command:
+            if command['stimulate']:
+                return 1
+            else:
+                return 0
+        else:
+            return 0
