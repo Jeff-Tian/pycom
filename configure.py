@@ -46,31 +46,48 @@ class ConfigureDialog:
 
     def update_ui(self):
         row = 0
-        for key, value in self.config.items():
-            print(key, value, type(value))
+        row = self.make_config(row)
+        row = self.make_button_row(row)
+
+    def make_config(self, row):
+        for config_item, value in self.config.items():
             if type(value) is not list:
-                label = tk.Label(self.modal_window, text=key)
-                label.grid(row=row, column=0, sticky=tk.W)
-
-                the_value = tk.StringVar()
-                the_value.set(value)
-                input_box = tk.Entry(self.modal_window, textvariable=the_value)
-                input_box.grid(row=row, column=1, sticky=tk.W)
-                row += 1
+                row = self.make_config_item(config_item, row, value)
             else:
-                label = tk.Label(self.modal_window, text=key)
-                label.grid(row=row, column=0, sticky=tk.W)
-                row += 1
+                row = self.make_list_name(config_item, row)
+                row = self.make_list_items(config_item, row)
 
-                for o in self.config[key]:
-                    self.make_command_name_label(o, row)
-                    row += 1
+        return row
 
-                    self.make_is_stimulate_checkbox(o, row)
-                    self.make_at_field(o, row)
-                    self.make_modules_checkboxes(o, row)
+    def make_config_item(self, config_item, row, value):
+        label = tk.Label(self.modal_window, text=config_item)
+        label.grid(row=row, column=0, sticky=tk.W)
+        the_value = tk.StringVar()
+        the_value.set(value)
+        input_box = tk.Entry(self.modal_window, textvariable=the_value)
+        input_box.grid(row=row, column=1, sticky=tk.W)
+        row += 1
+        return row
 
-                    row += 1
+    def make_list_name(self, key, row):
+        label = tk.Label(self.modal_window, text=key)
+        label.grid(row=row, column=0, sticky=tk.W)
+        row += 1
+        return row
+
+    def make_list_items(self, config_item_key, row):
+        for item in self.config[config_item_key]:
+            row = self.make_list_item(item, row)
+        return row
+
+    def make_list_item(self, o, row):
+        self.make_command_name_label(o, row)
+        row += 1
+        self.make_is_stimulate_checkbox(o, row)
+        self.make_at_field(o, row)
+        self.make_modules_checkboxes(o, row)
+        row += 1
+        return row
 
     def make_command_name_label(self, o, row):
         label = tk.Label(self.modal_window, text=o['command'])
@@ -101,3 +118,11 @@ class ConfigureDialog:
                              variable=command['module_' + str(module_index) + '_check'],
                              onvalue=1, offvalue=0)
         chk.grid(row=row, column=col, sticky=tk.W)
+
+    def make_button_row(self, row):
+        save_button = tk.Button(self.modal_window, text='保存', command=self.sync_config_and_save)
+        save_button.grid(row=row, column=0, sticky=tk.W)
+
+    def sync_config_and_save(self):
+        
+        self.save_config()
