@@ -47,9 +47,8 @@ class ConfigureDialog:
                     label.grid(row=row, column=0, sticky=tk.W)
                     row += 1
 
-                    is_stimulate = tk.IntVar()
-                    is_stimulate.set(self.is_stimulate(o))
-                    chk = tk.Checkbutton(self.modal_window, text='刺激', variable=is_stimulate, onvalue=1,
+                    o['is_stimulate'] = tk.IntVar(value=self.is_stimulate(o))
+                    chk = tk.Checkbutton(self.modal_window, text='刺激', variable=o['is_stimulate'], onvalue=1,
                                          offvalue=0)
                     chk.grid(row=row, column=1, sticky=tk.W)
 
