@@ -14,7 +14,10 @@ def is_stimulate(command):
 
 
 def is_module_checked(command, module_index):
-    if 'module' in command and module_index in command['module'] and command['module'][module_index] is True:
+    if 'module' in command and \
+                    type(command['module']) is dict and \
+                    module_index in command['module'] and \
+                    command['module'][module_index] is True:
         return 1
     else:
         return 0
