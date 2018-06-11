@@ -124,5 +124,5 @@ class ConfigureDialog:
         save_button.grid(row=row, column=0, sticky=tk.W)
 
     def sync_config_and_save(self):
-        
+
         self.save_config()

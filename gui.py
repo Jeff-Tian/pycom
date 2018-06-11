@@ -279,11 +279,14 @@ class GUI(Frame):
                 self.stimulate_lines[key]['ppi_button'].destroy()
                 self.stimulate_lines[key]['text_report'].destroy()
 
-        self.stimulate_lines = {}
-        stimulate_commands = [command for command in self.config['commands'] if
-                              ('stimulate' in command) and (command['stimulate'] == True)]
-        for i in range(0, len(stimulate_commands)):
-            self.make_stimulate(stimulate_commands[i], i)
+        if self.config is not None:
+            self.stimulate_lines = {}
+            stimulate_commands = [command for command in self.config['commands'] if
+                                  ('stimulate' in command) and (command['stimulate'] == True)]
+            for i in range(0, len(stimulate_commands)):
+                self.make_stimulate(stimulate_commands[i], i)
+        else:
+            messagebox.showinfo("问题：", "配置文件为空！")
 
     def make_stimulate(self, command, index=0):
         frame = self.frame
