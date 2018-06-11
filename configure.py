@@ -28,6 +28,7 @@ class ConfigureDialog:
         self.modal_window = tk.Toplevel(parent)
         # self.label = tk.Label(self.modal_window, text='实验配置')
         # self.label.pack()
+        self.commands = {}
         self.read_config()
         self.modal_window.grab_set()
 
@@ -36,6 +37,7 @@ class ConfigureDialog:
 
     def save_config(self, config_file_path='./config.yaml'):
         with open(config_file_path, 'w', encoding='utf8') as outfile:
+            print('config = ', self.config)
             yaml.dump(self.config, outfile, default_flow_style=False, allow_unicode=True)
 
     def read_config(self, config_file_path='./config.yaml'):
@@ -101,8 +103,8 @@ class ConfigureDialog:
         text_box.grid(row=row, column=3, sticky=tk.W)
 
     def make_is_stimulate_checkbox(self, command, row):
-        command['is_stimulate'] = tk.IntVar(value=is_stimulate(command))
-        chk = tk.Checkbutton(self.modal_window, text='刺激', variable=command['is_stimulate'], onvalue=1,
+        self.commands[row] = {'is_stimulate': tk.IntVar(value=is_stimulate(command))}
+        chk = tk.Checkbutton(self.modal_window, text='刺激', variable=self.commands[row]['is_stimulate'], onvalue=1,
                              offvalue=0)
         chk.grid(row=row, column=1, sticky=tk.W)
 
